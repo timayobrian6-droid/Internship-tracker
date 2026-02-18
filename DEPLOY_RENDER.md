@@ -22,6 +22,14 @@ If `git` is not installed, easiest path:
 4. Render will read `render.yaml` and create the web service.
 5. Click **Apply** and wait for deployment to finish.
 
+### Recommended environment variables
+
+Set these in Render → **Environment** so you can log in immediately:
+
+- `ADMIN_EMAIL` (initial admin account email)
+- `ADMIN_PASS` (initial admin password)
+- Optional: `RESET_EMAIL_MODE=console` if you have not set up SMTP yet
+
 ## 3) Share permanent link
 
 After deploy, Render gives a URL like:

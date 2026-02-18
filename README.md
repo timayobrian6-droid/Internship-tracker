@@ -96,7 +96,8 @@ To let others access the tracker without your laptop running, deploy it to a hos
 1. Put the project on GitHub (without `node_modules`).
 2. In Render, choose **New + → Blueprint**.
 3. Select your GitHub repo; Render will use `render.yaml`.
-4. After deploy, share the Render URL with anyone who needs access.
+4. In Render → **Environment**, set `ADMIN_EMAIL` and `ADMIN_PASS` to create your first admin account.
+5. After deploy, share the Render URL with anyone who needs access.
 
 Render automatically sets `RENDER_EXTERNAL_URL`, which the app uses for password reset links. On other hosts, set `RESET_BASE_URL` in `.env`.
 
