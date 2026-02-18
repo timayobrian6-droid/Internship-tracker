@@ -92,6 +92,7 @@ Integrated 28 steps including UI Library setup, Stage Filtering, and Unit Testin
 ## Permanent Public Link (Recommended)
 
 To let others access the tracker without your laptop running, deploy it to a hosting provider (Render is already set up).
+The **Deploy to Render** button is directly below in this section.
 
 **One-click deploy (no command line):** Click this button and follow the prompts.
 **Important:** If you are deploying a fork, edit this README and replace the `repo=` URL in the button link with your own GitHub repo (or use the example link below).

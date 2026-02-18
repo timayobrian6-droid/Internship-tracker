@@ -6,6 +6,7 @@ This project is now prepared for Render deployment.
 
 Click the button below and follow the prompts in Render.
 **Important:** If you are deploying a fork, replace the `repo=` URL in the button link with your own GitHub repo first.
+The **Deploy to Render** button is immediately below.
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/timayobrian6-droid/internship-tracker)
 
