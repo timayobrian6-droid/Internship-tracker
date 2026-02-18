@@ -28,10 +28,11 @@ After deploy, Render gives a URL like:
 
 `https://internship-tracker.onrender.com`
 
-Share that URL with your professor.
+Share that URL with anyone who needs access (your laptop can stay off).
 
 ## Notes
 
 - First load after inactivity on free plan may take 30–60 seconds.
 - Data is SQLite-based; free hosting file storage may reset on redeploy.
 - For grading/demo, this is usually fine.
+- Render provides `RENDER_EXTERNAL_URL` automatically. If you host elsewhere, set `RESET_BASE_URL` in `.env` so password reset links point to the hosted site.

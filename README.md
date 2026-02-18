@@ -91,11 +91,13 @@ Integrated 28 steps including UI Library setup, Stage Filtering, and Unit Testin
 
 ## Permanent Public Link (Recommended)
 
-This repo is Render-ready.
+To let others access the tracker without your laptop running, deploy it to a hosting provider (Render is already set up).
 
 1. Put the project on GitHub (without `node_modules`).
 2. In Render, choose **New + → Blueprint**.
 3. Select your GitHub repo; Render will use `render.yaml`.
-4. After deploy, share the Render URL with your professor.
+4. After deploy, share the Render URL with anyone who needs access.
+
+Render automatically sets `RENDER_EXTERNAL_URL`, which the app uses for password reset links. On other hosts, set `RESET_BASE_URL` in `.env`.
 
 Detailed steps: see `DEPLOY_RENDER.md`.
