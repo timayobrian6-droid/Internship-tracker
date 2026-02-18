@@ -94,10 +94,11 @@ Integrated 28 steps including UI Library setup, Stage Filtering, and Unit Testin
 To let others access the tracker without your laptop running, deploy it to a hosting provider (Render is already set up).
 
 **No-command-line option:** click this button and follow the prompts.
+**Important:** If you are deploying a fork, replace the `repo=` URL in the button link with your own GitHub repo first.
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/timayobrian6-droid/Internship-tracker)
 
-If you forked the repo, replace the link with your fork URL.
+Example fork link: `https://render.com/deploy?repo=https://github.com/<your-username>/<your-repo>`
 
 1. Put the project on GitHub (without `node_modules`).
 2. In Render, choose **New + → Blueprint**.
