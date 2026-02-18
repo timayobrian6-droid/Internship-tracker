@@ -34,7 +34,7 @@ Notes:
 - A development admin account is seeded automatically (see `.env.example`).
 - Server runs on port 5000 by default. Update `PORT` in `.env` if needed.
 
-## Run in GitHub (Codespaces)
+## Run in GitHub Codespaces
 
 GitHub itself does not host Node/React apps, but you can run this project in a GitHub Codespace (browser-based dev environment).
 
@@ -48,7 +48,7 @@ npm --prefix internship-frontend install
 npm run dev
 ```
 
-Then open the forwarded ports from the **Ports** tab (5000 for the backend, 3000 for the frontend).
+Then open the forwarded ports from the **Ports** tab (5000 for the backend, 3000 for the frontend) by clicking the link or globe icon. If you need to share access, set the port visibility to **Public**.
 
 ## Submit by Email (Professor-Friendly)
 
