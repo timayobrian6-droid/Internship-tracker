@@ -96,7 +96,7 @@ To let others access the tracker without your laptop running, deploy it to a hos
 **No-command-line option:** click this button and follow the prompts.
 **Important:** If you are deploying a fork, replace the `repo=` URL in the button link with your own GitHub repo first.
 
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=<YOUR_GITHUB_REPO_URL>)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/your-username/your-repo)
 
 Example fork link: `https://render.com/deploy?repo=https://github.com/<your-username>/<your-repo>`
 
