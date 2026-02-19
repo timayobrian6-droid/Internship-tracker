@@ -34,6 +34,22 @@ Notes:
 - A development admin account is seeded automatically (see `.env.example`).
 - Server runs on port 5000 by default. Update `PORT` in `.env` if needed.
 
+## Run in GitHub Codespaces
+
+GitHub itself does not host Node/React apps, but you can run this project in a GitHub Codespace (browser-based dev environment).
+
+1. Open the repo on GitHub.
+2. Click **Code** → **Codespaces** → **Create codespace on main**.
+3. In the Codespace terminal, run:
+
+```bash
+npm install
+npm --prefix internship-frontend install
+npm run dev
+```
+
+Then open the forwarded ports from the **Ports** tab (5000 for the backend, 3000 for the frontend) by clicking the link or globe icon. If you need to share access, set the port visibility to **Public**.
+
 ## Submit by Email (Professor-Friendly)
 
 To share this project by email:
@@ -91,11 +107,22 @@ Integrated 28 steps including UI Library setup, Stage Filtering, and Unit Testin
 
 ## Permanent Public Link (Recommended)
 
-This repo is Render-ready.
+To let others access the tracker without your laptop running, deploy it to a hosting provider (Render is already set up).
+The **Deploy to Render** button is directly below in this section.
+
+**One-click deploy (no command line):** Click this button and follow the prompts.
+**Important:** If you are deploying a fork, edit this README and replace the `repo=` URL in the button link with your own GitHub repo (or use the example link below).
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/timayobrian6-droid/internship-tracker)
+
+Example fork link: `https://render.com/deploy?repo=https://github.com/your-username/your-repo`
 
 1. Put the project on GitHub (without `node_modules`).
 2. In Render, choose **New + → Blueprint**.
 3. Select your GitHub repo; Render will use `render.yaml`.
-4. After deploy, share the Render URL with your professor.
+4. In Render → **Environment**, set `ADMIN_EMAIL` and `ADMIN_PASS` to create your first admin account.
+5. After deploy, share the Render URL with anyone who needs access.
+
+Render automatically sets `RENDER_EXTERNAL_URL`, which the app uses for password reset links. On other hosts, set `RESET_BASE_URL` in `.env`.
 
 Detailed steps: see `DEPLOY_RENDER.md`.

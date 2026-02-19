@@ -28,7 +28,8 @@ const SMTP_SECURE = String(process.env.SMTP_SECURE || '').toLowerCase() === 'tru
 const SMTP_USER = process.env.SMTP_USER || '';
 const SMTP_PASS = process.env.SMTP_PASS || '';
 const SMTP_FROM = process.env.SMTP_FROM || '';
-const RESET_BASE_URL = process.env.RESET_BASE_URL || 'http://localhost:3000';
+const RESET_BASE_URL_RAW = process.env.RESET_BASE_URL || process.env.RENDER_EXTERNAL_URL || 'http://localhost:3000';
+const RESET_BASE_URL = RESET_BASE_URL_RAW.replace(/\/$/, '');
 const RESET_EMAIL_MODE = (process.env.RESET_EMAIL_MODE || 'smtp').toLowerCase();
 let mailTransporter = null;
 
