@@ -2,7 +2,7 @@ const http = require('http');
 
 function req(path, method='GET', body=null, token=null){
   const opts = {
-    hostname: 'localhost', port: 5000, path, method,
+    hostname: 'localhost', port: 3001, path, method,
     headers: { 'Content-Type': 'application/json' }
   };
   if (token) opts.headers['Authorization'] = `Bearer ${token}`;
