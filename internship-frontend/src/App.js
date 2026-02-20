@@ -2465,6 +2465,7 @@ function App() {
             {adminLoginMode && authView === 'login' ? 'Admin Sign In' : authView === 'login' ? 'Sign In' : authView === 'register' ? 'Register' : authView === 'forgot' ? 'Reset Password' : 'Set New Password'}
           </h3>
           <AuthForm view={authView} resetToken={resetToken} adminOnly={adminLoginMode} onSwitch={(v) => setAuthView(v)} onSuccess={(data) => {
+            clearSessionState();
             setToken(data.token);
             setUserRole(data.user.role);
             setUserInfo(data.user || null);
@@ -2587,7 +2588,7 @@ function App() {
             ));
           })()}
         </nav>
-        <button onClick={() => { setView('landing'); setToken(null); setUserRole(null); setUserInfo(null); }} style={{ padding: '30px', color: '#64748b', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>LOGOUT</button>
+        <button onClick={handleLogout} style={{ padding: '30px', color: '#64748b', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>LOGOUT</button>
       </aside>
 
       <main style={{ flex: 1, padding: '50px', display: 'flex', flexDirection: 'column', alignItems: 'center', overflowY: 'auto' }}>
