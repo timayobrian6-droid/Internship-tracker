@@ -1104,8 +1104,9 @@ function App() {
     } else {
       delete axios.defaults.headers.common['Authorization'];
       localStorage.removeItem('it_token');
+      clearSessionState();
     }
-  }, [token]);
+  }, [token, clearSessionState]);
 
   useEffect(() => {
     const t = localStorage.getItem('it_token');
@@ -1383,6 +1384,35 @@ function App() {
     career_goals: '',
     relevant_experience: ''
   });
+
+  const clearSessionState = useCallback(() => {
+    setStudents([]);
+    setCompanies([]);
+    setOpeningsPublic([]);
+    setMemberCompanies([]);
+    setApplications([]);
+    setApplicationRequests([]);
+    setRequestDrafts({});
+    setRequestResponseDrafts({});
+    setApplicationDrafts([]);
+    setStudentSummary(null);
+    setStudentInterviewMap({});
+    setSupportTickets([]);
+    setSupportReplyDrafts({});
+    setShowApplyModal(false);
+    setApplyCompany(null);
+    setApplyOpening(null);
+    setApplyingCompany(null);
+    setActiveTab('dashboard');
+  }, []);
+
+  const handleLogout = useCallback(() => {
+    clearSessionState();
+    setView('landing');
+    setToken(null);
+    setUserRole(null);
+    setUserInfo(null);
+  }, [clearSessionState]);
 
   const refreshApplications = useCallback(async () => {
     if (!token) return setApplications([]);
@@ -2143,7 +2173,7 @@ function App() {
     acc[key] = (acc[key] || 0) + 1;
     return acc;
   }, {});
-  const studentCompanyDirectory = userRole === 'student' && memberCompanies.length ? memberCompanies : companies;
+  const studentCompanyDirectory = userRole === 'student' ? memberCompanies : companies;
   const filteredMemberCompanies = userRole === 'student'
     ? memberCompanies.filter(c => {
         const needle = companySearch.trim().toLowerCase();

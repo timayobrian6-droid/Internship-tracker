@@ -1,4 +1,5 @@
 const sqlite3 = require('sqlite3').verbose();
+const { dbFile } = require('./db_file');
 
 const studentEmails = [
   'amina.yusuf@example.com',
@@ -11,7 +12,7 @@ const companyNames = [
   'BrightPath Health'
 ];
 
-const db = new sqlite3.Database('./internship_final.db');
+const db = new sqlite3.Database(dbFile);
 
 const run = (sql, params = []) => new Promise((resolve, reject) => {
   db.run(sql, params, function (err) {

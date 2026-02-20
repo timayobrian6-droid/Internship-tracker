@@ -1,8 +1,9 @@
 const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require('bcrypt');
 const { faker } = require('@faker-js/faker');
+const { dbFile } = require('./db_file');
 
-const db = new sqlite3.Database('./internship_final.db', (err) => {
+const db = new sqlite3.Database(dbFile, (err) => {
     if (err) {
         console.error("Error opening database:", err.message);
         process.exit(1);

@@ -1,5 +1,6 @@
 const sqlite3 = require('sqlite3').verbose();
-const db = new sqlite3.Database('./internship_final.db', (err) => { if (err) return console.error('DB open error', err); });
+const { dbFile } = require('./db_file');
+const db = new sqlite3.Database(dbFile, (err) => { if (err) return console.error('DB open error', err); });
 
 function allAsync(sql) {
   return new Promise((res, rej) => db.all(sql, [], (e, rows) => e ? rej(e) : res(rows)));

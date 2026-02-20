@@ -1,9 +1,10 @@
 const fs = require('fs');
 const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
+const { dbFile } = require('./db_file');
 
 const root = path.resolve(__dirname, '..');
-const dbPath = path.join(root, 'internship_final.db');
+const dbPath = dbFile;
 const backupsDir = path.join(root, 'backups');
 
 function ensureDir(d) { if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true }); }

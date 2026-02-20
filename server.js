@@ -11,6 +11,7 @@ const crypto = require('crypto');
 require('dotenv').config();
 
 const path = require('path');
+const { dbFile } = require('./scripts/db_file');
 
 // ... (existing imports) ...
 
@@ -95,9 +96,9 @@ Log in to your InternConnect dashboard to review the details and apply.`;
 }
 
 // 1. Connect to your database file
-const db = new sqlite3.Database('./internship_final.db', (err) => {
+const db = new sqlite3.Database(dbFile, (err) => {
     if (err) console.error("Database connection error:", err.message);
-    else console.log("Connected to internship_final.db");
+    else console.log(`Connected to ${dbFile}`);
 });
 
 let io = null;

@@ -1,12 +1,12 @@
 const fs = require('fs');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const { dbFile } = require('./db_file');
 const logPath = path.join(__dirname, 'migrations.log');
 function log(...args) { fs.appendFileSync(logPath, new Date().toISOString() + ' - ' + args.join(' ') + '\n'); }
 (async ()=>{
   try {
     log('Starting migration script');
-    const dbFile = path.join(__dirname, '..', 'internship_final.db');
     const backup = dbFile + '.bak.' + Date.now();
     fs.copyFileSync(dbFile, backup);
     log('Backup created', backup);
