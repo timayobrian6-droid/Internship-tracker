@@ -4,6 +4,7 @@
   "main": "server.js",
   "scripts": {
     "ensure:port": "node scripts/ensure_port_free.js 3001",
+    "predev": "npm run ensure:port",
     "prestart": "npm run ensure:port && npm run build:frontend",
     "start": "node server.js",
     "dev": "nodemon server.js",
