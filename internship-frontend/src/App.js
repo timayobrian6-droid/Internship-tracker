@@ -1383,6 +1383,33 @@ function App() {
     career_goals: '',
     relevant_experience: ''
   });
+  const sessionIdentityRef = useRef('');
+
+  const resetUserScopedState = useCallback(() => {
+    setApplications([]);
+    setApplicationRequests([]);
+    setRequestDrafts({});
+    setRequestResponseDrafts({});
+    setApplicationDrafts([]);
+    setOpeningsPublic([]);
+    setMemberCompanies([]);
+    setSupportTickets([]);
+    setStudentInterviewMap({});
+    setInterviewSchedule({});
+    setViewingApplicant(null);
+    setApplicantProfile(null);
+    setApplyingCompany(null);
+    setShowApplyModal(false);
+    setApplyCompany(null);
+    setApplyOpening(null);
+    setCompanyOpenings([]);
+    setCompanyProfile(null);
+    setCompanySubscriberCount(0);
+    setHasNotification(false);
+    setAdminHasNotification(false);
+    setNotificationTarget('dashboard');
+    setAdminNotificationTarget('overview');
+  }, []);
 
   const refreshApplications = useCallback(async () => {
     if (!token) return setApplications([]);
