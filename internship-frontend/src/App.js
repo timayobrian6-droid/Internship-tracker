@@ -39,7 +39,7 @@ import { io } from 'socket.io-client';
  */
 
 const isDev = process.env.NODE_ENV === 'development';
-const devApiOrigin = process.env.REACT_APP_API_ORIGIN || `${window.location.protocol}//${window.location.hostname}:5000`;
+const devApiOrigin = process.env.REACT_APP_API_ORIGIN || `${window.location.protocol}//${window.location.hostname}:3001`;
 const API = isDev ? `${devApiOrigin}/api` : "/api";
 const ADMIN_CONTACT_EMAIL = 'timayobrian6@gmail.com';
 
