@@ -32,7 +32,7 @@ npm start
 Notes:
 
 - A development admin account is seeded automatically (see `.env.example`).
-- Server runs on port 5000 by default. Update `PORT` in `.env` if needed.
+- Server runs on port 3001 by default. Update `PORT` in `.env` if needed.
 
 ## Run in GitHub Codespaces
 
@@ -44,11 +44,10 @@ GitHub itself does not host Node/React apps, but you can run this project in a G
 
 ```bash
 npm install
-npm --prefix internship-frontend install
-npm run dev
+npm start
 ```
 
-Then open the forwarded ports from the **Ports** tab (5000 for the backend, 3000 for the frontend) by clicking the link or globe icon. If you need to share access, set the port visibility to **Public**.
+Then open forwarded port **3001** from the **Ports** tab by clicking the link or globe icon. If you need to share access, set the port visibility to **Public**.
 
 ## Submit by Email (Professor-Friendly)
 
@@ -62,8 +61,7 @@ If Node.js is missing, `launch.bat` now opens the official Node.js LTS download 
 
 What happens after launch:
 
-- Preferred mode: backend starts and serves the built frontend at `http://localhost:5000`
-- Fallback mode: backend on `http://localhost:5000` and frontend dev server on `http://localhost:3000`
+- Single-port mode: backend starts and serves the built frontend at `http://localhost:3001`
 
 Optional manual run (if they prefer terminal):
 
@@ -75,20 +73,7 @@ npm start
 Open:
 
 ```powershell
-http://localhost:5000
-```
-
-If `internship-frontend/build` is missing, use dev mode:
-
-```powershell
-npm run dev
-```
-
-In another terminal:
-
-```powershell
-npm --prefix internship-frontend install
-npm --prefix internship-frontend start
+http://localhost:3001
 ```
 
 DB backup & migration

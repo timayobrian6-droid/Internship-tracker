@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "main": "server.js",
   "scripts": {
+    "prestart": "npm run build:frontend",
     "start": "node server.js",
     "dev": "nodemon server.js",
     "db:backup-migrate": "node scripts/migrate_and_backup.js",

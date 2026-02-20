@@ -40,29 +40,10 @@ if not exist "node_modules" (
 	)
 )
 
-if exist "internship-frontend\build\index.html" (
-	echo Starting backend server (frontend build is served by backend)...
-	start "Internship Tracker" cmd /k "cd /d \"%~dp0\" && npm.cmd start"
-	echo.
-	echo Open in browser: http://localhost:5000
-	goto :eof
-)
-
-if not exist "internship-frontend\node_modules" (
-	echo Installing frontend dependencies...
-	npm.cmd --prefix internship-frontend install
-	if errorlevel 1 (
-		echo Frontend dependency installation failed.
-		pause
-		exit /b 1
-	)
-)
-
-echo Frontend build not found; starting development mode...
-start "Internship Backend" cmd /k "cd /d \"%~dp0\" && npm.cmd run dev"
-
-start "Internship Frontend" cmd /k "cd /d \"%~dp0internship-frontend\" && set HOST=0.0.0.0 && npm.cmd start"
+echo Starting Internship Tracker in single-port mode...
+echo (npm start will build frontend, then serve app + API from backend)
+start "Internship Tracker" cmd /k "cd /d \"%~dp0\" && npm.cmd start"
 
 echo.
-echo Open in browser: http://localhost:3000
-echo To open from another device on same network: http://YOUR-PC-IP:3000
+echo Open in browser: http://localhost:3001
+echo To open from another device on same network: http://YOUR-PC-IP:3001
