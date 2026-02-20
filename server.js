@@ -465,12 +465,12 @@ db.serialize(() => {
         branding_name: 'Internship Tracker',
         branding_mission: 'Connect students to real-world internships through transparent pipelines, proactive support, and accountable partnerships.',
         branding_vision: 'A campus-to-career network where every student discovers opportunities early, progresses with clarity, and graduates with confidence.',
-        contact_email: process.env.ADMIN_EMAIL || '',
-        require_approval: '0'
+        contact_email: process.env.ADMIN_EMAIL || ''
     };
     Object.entries(defaultSettings).forEach(([key, value]) => {
         db.run(`INSERT OR IGNORE INTO app_settings (key, value) VALUES (?, ?)`, [key, value]);
     });
+    db.run(`UPDATE users SET status = 'active' WHERE lower(coalesce(status, 'active')) = 'pending'`);
 
     // Migration: ensure applications table has necessary columns (handle older DBs)
     db.all(`PRAGMA table_info('applications')`, [], (err, cols) => {
@@ -681,8 +681,18 @@ app.patch('/api/support-tickets/:id/reply', authenticateToken, authorizeRole(['a
 
 app.get('/api/member-companies', authenticateToken, authorizeRole(['student']), (req, res) => {
     const studentId = req.user.studentId;
-    if (!studentId) return res.status(400).json({ error: 'Student profile not linked to account' });
+    if (!studentId) {
         const sql = `SELECT c.id, c.name, c.industry, c.openings, c.location, c.overview, c.mission, c.vision,
+                       0 as subscribed
+                FROM companies c
+                ORDER BY c.name`;
+        db.all(sql, [], (err, rows) => {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json(rows || []);
+        });
+        return;
+    }
+    const sql = `SELECT c.id, c.name, c.industry, c.openings, c.location, c.overview, c.mission, c.vision,
                        CASE WHEN s.id IS NULL THEN 0 ELSE 1 END as subscribed
                 FROM companies c
                 LEFT JOIN student_company_subscriptions s
@@ -1029,10 +1039,12 @@ app.get('/api/application-requests', authenticateToken, (req, res) => {
                JOIN applications a ON a.id = ar.application_id
                JOIN companies c ON c.id = a.company_id`;
     const params = [];
-    if (req.user.role === 'student' && req.user.studentId) {
+    if (req.user.role === 'student') {
+        if (!req.user.studentId) return res.json([]);
         sql += ` WHERE a.student_id = ?`;
         params.push(req.user.studentId);
-    } else if (req.user.role === 'company' && req.user.companyId) {
+    } else if (req.user.role === 'company') {
+        if (!req.user.companyId) return res.json([]);
         sql += ` WHERE a.company_id = ?`;
         params.push(req.user.companyId);
     }
@@ -1470,37 +1482,33 @@ app.post('/api/auth/register', async (req, res) => {
         if (role === 'admin') return res.status(403).json({ error: 'Admin registration is disabled' });
         if ((!username && !email) || !password) return res.status(400).json({ error: 'username/email and password required' });
 
-        getAppSetting('require_approval', '0', async (errSetting, value) => {
-            if (errSetting) return res.status(500).json({ error: errSetting.message });
-            const status = value === '1' ? 'pending' : 'active';
-            const hash = await bcrypt.hash(password, 10);
-            const sql = `INSERT INTO users (username, email, password_hash, role, student_id, company_id, status) VALUES (?, ?, ?, ?, ?, ?, ?)`;
-            db.run(sql, [username || null, email || null, hash, role, student_id || null, company_id || null, status], function(err) {
-                if (err) return res.status(500).json({ error: err.message });
-                const userId = this.lastID;
+        const status = 'active';
+        const hash = await bcrypt.hash(password, 10);
+        const sql = `INSERT INTO users (username, email, password_hash, role, student_id, company_id, status) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+        db.run(sql, [username || null, email || null, hash, role, student_id || null, company_id || null, status], function(err) {
+            if (err) return res.status(500).json({ error: err.message });
+            const userId = this.lastID;
 
-                logAudit({ actorUserId: userId, actionType: 'register', entityType: 'user', entityId: userId, details: { role, status } });
-                const user = { id: userId, username: username || null, email: email || null, role, status };
-                const payload = { userId: userId, role: user.role, studentId: student_id || null, companyId: company_id || null };
-                // fetch linked profile display name if possible
-                if (student_id) {
-                    db.get(`SELECT * FROM students WHERE id = ?`, [student_id], (err2, studentRow) => {
-                        const displayName = studentRow ? studentRow.full_name : (username || email || 'User');
-                        const token = jwt.sign({ ...payload }, JWT_SECRET, { expiresIn: '8h' });
-                        res.json({ token, user: { ...payload, displayName, status } });
-                    });
-                } else if (company_id) {
-                    db.get(`SELECT * FROM companies WHERE id = ?`, [company_id], (err3, companyRow) => {
-                        const displayName = companyRow ? companyRow.name : (username || email || 'User');
-                        const token = jwt.sign({ ...payload }, JWT_SECRET, { expiresIn: '8h' });
-                        res.json({ token, user: { ...payload, displayName, status } });
-                    });
-                } else {
-                    const displayName = username || email || 'User';
-                    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '8h' });
+            logAudit({ actorUserId: userId, actionType: 'register', entityType: 'user', entityId: userId, details: { role, status } });
+            const user = { id: userId, username: username || null, email: email || null, role, status };
+            const payload = { userId: userId, role: user.role, studentId: student_id || null, companyId: company_id || null };
+            if (student_id) {
+                db.get(`SELECT * FROM students WHERE id = ?`, [student_id], (err2, studentRow) => {
+                    const displayName = studentRow ? studentRow.full_name : (username || email || 'User');
+                    const token = jwt.sign({ ...payload }, JWT_SECRET, { expiresIn: '8h' });
                     res.json({ token, user: { ...payload, displayName, status } });
-                }
-            });
+                });
+            } else if (company_id) {
+                db.get(`SELECT * FROM companies WHERE id = ?`, [company_id], (err3, companyRow) => {
+                    const displayName = companyRow ? companyRow.name : (username || email || 'User');
+                    const token = jwt.sign({ ...payload }, JWT_SECRET, { expiresIn: '8h' });
+                    res.json({ token, user: { ...payload, displayName, status } });
+                });
+            } else {
+                const displayName = username || email || 'User';
+                const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '8h' });
+                res.json({ token, user: { ...payload, displayName, status } });
+            }
         });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -1533,9 +1541,11 @@ app.post('/api/auth/login', (req, res) => {
                 return res.status(401).json({ error: 'Invalid credentials' });
             }
             const status = (user.status || 'active').toString().toLowerCase();
-            if (status !== 'active') {
-                const message = status === 'pending' ? 'Account pending approval' : 'Account disabled';
-                return res.status(403).json({ error: message });
+            if (status === 'pending') {
+                db.run(`UPDATE users SET status = 'active' WHERE id = ?`, [user.id]);
+            }
+            if (status === 'disabled') {
+                return res.status(403).json({ error: 'Account disabled' });
             }
             const basePayload = { userId: user.id, role: user.role, studentId: user.student_id || null, companyId: user.company_id || null };
             // include friendly displayName from linked profile when available
@@ -1842,7 +1852,7 @@ app.get('/api/admin/settings', authenticateToken, authorizeRole(['admin']), (req
 });
 
 app.put('/api/admin/settings', authenticateToken, authorizeRole(['admin']), (req, res) => {
-    const allowedKeys = ['branding_name', 'branding_mission', 'branding_vision', 'contact_email', 'require_approval'];
+    const allowedKeys = ['branding_name', 'branding_mission', 'branding_vision', 'contact_email'];
     const entries = Object.entries(req.body || {}).filter(([key]) => allowedKeys.includes(key));
     if (!entries.length) return res.status(400).json({ error: 'No settings to update' });
     const updates = entries.map(([key, value]) => new Promise((resolve, reject) => {
@@ -2089,10 +2099,12 @@ app.get('/api/applications', authenticateToken, (req, res) => {
                LEFT JOIN students s ON s.id = a.student_id
                LEFT JOIN companies c ON c.id = a.company_id`;
     const params = [];
-    if (req.user.role === 'student' && req.user.studentId) {
+    if (req.user.role === 'student') {
+        if (!req.user.studentId) return res.json([]);
         sql += ` WHERE a.student_id = ?`;
         params.push(req.user.studentId);
-    } else if (req.user.role === 'company' && req.user.companyId) {
+    } else if (req.user.role === 'company') {
+        if (!req.user.companyId) return res.json([]);
         sql += ` WHERE a.company_id = ? AND a.stage != 'Withdrawn'`;
         params.push(req.user.companyId);
     }

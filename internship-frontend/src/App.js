@@ -1366,7 +1366,6 @@ function App() {
     branding_mission: '',
     branding_vision: '',
     contact_email: '',
-    require_approval: '0',
     reset_email_mode: '',
     reset_base_url: '',
     smtp_from: ''
@@ -1527,8 +1526,7 @@ function App() {
         branding_name: adminSettings.branding_name,
         branding_mission: adminSettings.branding_mission,
         branding_vision: adminSettings.branding_vision,
-        contact_email: adminSettings.contact_email,
-        require_approval: adminSettings.require_approval
+        contact_email: adminSettings.contact_email
       };
       await axios.put(`${API}/admin/settings`, payload);
       await loadAdminSettings();
@@ -3799,13 +3797,11 @@ function App() {
                 <select value={adminUserStatusFilter} onChange={(e) => setAdminUserStatusFilter(e.target.value)} style={{ padding: 10, borderRadius: 8, border: '1px solid #e2e8f0' }}>
                   <option value="all">All status</option>
                   <option value="active">Active</option>
-                  <option value="pending">Pending</option>
                   <option value="disabled">Disabled</option>
                 </select>
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
                 <div style={{ fontSize: 12, color: '#64748b' }}>{adminSelectedUserIds.length} selected</div>
-                <button onClick={() => bulkUpdateUsers('approve')} style={{ background: '#16a34a', color: 'white', border: 'none', padding: '6px 10px', borderRadius: 8 }}>Approve</button>
                 <button onClick={() => bulkUpdateUsers('enable')} style={{ background: '#2563eb', color: 'white', border: 'none', padding: '6px 10px', borderRadius: 8 }}>Enable</button>
                 <button onClick={() => bulkUpdateUsers('disable')} style={{ background: '#ef4444', color: 'white', border: 'none', padding: '6px 10px', borderRadius: 8 }}>Disable</button>
                 <button onClick={bulkResetUsers} style={{ background: '#0f172a', color: 'white', border: 'none', padding: '6px 10px', borderRadius: 8 }}>Send Reset</button>
@@ -3947,14 +3943,6 @@ function App() {
                   onChange={(e) => setAdminSettings(prev => ({ ...prev, contact_email: e.target.value }))}
                   style={{ padding: 10, borderRadius: 8, border: '1px solid #e2e8f0' }}
                 />
-                <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 12, color: '#475569' }}>
-                  <input
-                    type="checkbox"
-                    checked={String(adminSettings.require_approval || '0') === '1'}
-                    onChange={(e) => setAdminSettings(prev => ({ ...prev, require_approval: e.target.checked ? '1' : '0' }))}
-                  />
-                  Require admin approval for new accounts
-                </label>
                 <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
                   <button
                     onClick={saveAdminSettings}
