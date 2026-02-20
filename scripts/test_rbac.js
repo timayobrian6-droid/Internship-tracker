@@ -2,7 +2,7 @@ const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch
 (async ()=>{
   try {
     console.log('Starting RBAC tests');
-    const base = 'http://localhost:5000/api';
+    const base = 'http://localhost:3001/api';
     // Login admin
     console.log('Logging in admin...');
     let res = await fetch(base + '/auth/login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ username:'admin@local', password:'adminpass' }) });
