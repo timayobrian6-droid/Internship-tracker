@@ -18,7 +18,7 @@ Backend (root)
 
 ```powershell
 npm install
-npm run dev
+node server.js
 ```
 
 Frontend (internship-frontend)

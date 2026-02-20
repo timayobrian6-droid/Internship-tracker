@@ -6,7 +6,7 @@ In the `internship-frontend` directory, you can run:
 
 ### `npm start`
 
-Runs the app in development mode on [http://localhost:3002](http://localhost:3002).
+Runs the app in development mode on [http://localhost:3000](http://localhost:3000) when available.
 
 ### `npm test`
 
