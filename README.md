@@ -1,76 +1,165 @@
-# InternConnect Enterprise Tracker 🚀
+# InternConnect Enterprise Tracker
 
-A high-fidelity, full-stack internship management system built with React, Node.js, and SQLite.
+InternConnect is a full-stack internship management platform built with React, Node.js, and SQLite.
+It helps students discover real internship openings, apply in one place, and track progress by stage while helping companies manage openings and applicant pipelines.
 
-## Key Features
+## What this app does
 
-- **Kanban Pipeline**: Drag-and-drop style workflow management.
-- **Placement Analytics**: Real-time aggregation of hiring success rates.
-- **Global Search**: Performance-optimized search across students and companies.
-- **Reporting**: Exportable CSV and PDF placement summaries.
+- Centralizes internship discovery, application, and tracking.
+- Gives students a structured pipeline (`Applied`, `Interviewing`, `Offer`, `Placed`, etc.).
+- Lets companies publish openings, review applicants, and move candidates through stages.
+- Provides role-based dashboards for Students, Companies, and Admins.
+- Supports profile management, support tickets, password reset, and live updates.
 
-## Setup Instructions
+## Problems it solves for students
 
-Backend (root)
+- Removes scattered applications across email/spreadsheets.
+- Prevents missing deadlines by keeping openings and statuses visible in one dashboard.
+- Gives clear visibility into where each application stands.
+- Keeps company research (overview/mission/vision) next to openings for faster decisions.
 
-1. Copy `.env.example` to `.env` and update values.
-2. Install backend deps and run:
+## Who uses it
 
-```powershell
+- **Students**: Build profile, follow companies, apply to openings, track status.
+- **Companies**: Manage profile, publish openings, handle applicants.
+- **Admins**: Monitor users, data quality, settings, support, and audit trails.
+
+---
+
+## Student frontend: how to navigate every tab
+
+After login as a student, use the left sidebar tabs:
+
+### 1) Dashboard
+
+- See key stats and application summaries.
+- Review interview/offer/progress highlights.
+
+### 2) My Profile
+
+- Create or update your student profile.
+- Upload and manage required documents.
+
+### 3) Member Companies
+
+- View **all member companies** from the main database.
+- Subscribe/unsubscribe to companies.
+- See company details like industry, location, overview, mission, and vision.
+
+### 4) Openings
+
+- Browse current internship openings from companies you follow.
+- Open the apply modal and submit an application.
+
+### 5) Applications
+
+- Track your own application pipeline by stage.
+- Edit/withdraw where allowed.
+- See only your own applications (isolated per student account).
+
+### 6) Support
+
+- Create support tickets.
+- View admin replies and ticket status.
+
+---
+
+## Company frontend: how to navigate every tab
+
+After login as a company user:
+
+### Company 1) Dashboard
+
+- View applicant and activity summaries.
+- See recent pipeline movement.
+
+### Company 2) Profile
+
+- Manage company profile and branding information.
+
+### Company 3) Openings
+
+- Create, update, or remove internship openings.
+- Control details like role title, department, expectations, slots, and deadlines.
+
+### Company 4) Applications
+
+- Review applicants for your company.
+- Move candidates across stages (`Applied` → `Interviewing` → `Offer` → `Placed`, etc.).
+- Handle candidate communication requests.
+
+### Company 5) Support
+
+- Contact admin through the in-app support flow.
+
+---
+
+## Run in VS Code (local deployment)
+
+Use two terminals.
+
+### Terminal 1 (Backend)
+
+```bash
 npm install
 node server.js
 ```
 
-Frontend (internship-frontend)
+Backend runs on `http://localhost:3001`.
 
-```powershell
+### Terminal 2 (Frontend)
+
+```bash
 cd internship-frontend
 npm install
 npm start
 ```
 
-Notes:
+Frontend usually runs on `http://localhost:3000`.
 
-- A development admin account is seeded automatically (see `.env.example`).
-- Server runs on port 3001 by default. Update `PORT` in `.env` if needed.
+If prompted to use a different frontend port, accept it and open the URL shown in terminal.
 
-## Submit by Email (Professor-Friendly)
+---
 
-To share this project by email:
+## Optional single-port run
 
-1. Zip the whole project folder (include both root and `internship-frontend`).
-2. Send the ZIP file to your professor.
-3. Ask them to extract it, then double-click `launch.bat`.
+To serve the built frontend from the backend:
 
-If Node.js is missing, `launch.bat` now opens the official Node.js LTS download page automatically and then continues after installation.
-
-What happens after launch:
-
-- Single-port mode: backend starts and serves the built frontend at `http://localhost:3001`
-
-Optional manual run (if they prefer terminal):
-
-```powershell
-npm install
+```bash
 npm start
 ```
 
-Open:
+Open `http://localhost:3001`.
 
-```powershell
-http://localhost:3001
-```
+---
 
-DB backup & migration
+## Environment and database
 
-Before running any schema-changing scripts, create a backup and apply safe migrations:
+Copy `.env.example` to `.env` and edit values as needed.
 
-```powershell
-npm run db:backup-migrate
-```
+Key variables:
 
-This copies `internship_final.db` into `backups/` with a timestamp and applies idempotent migrations (adds missing columns/tables).
+- `DB_FILE=internship_final.db` (single source database file)
+- `PORT=5000` (used if set; app defaults to 3001 when not set)
+- `JWT_SECRET=...`
+- `RESET_BASE_URL=http://localhost:3001`
 
-## Technical Roadmap
+All backend and scripts are configured to use the same database file path.
 
-Integrated 28 steps including UI Library setup, Stage Filtering, and Unit Testing.
+---
+
+## Useful scripts
+
+From repo root:
+
+- `npm run dev` → backend with nodemon
+- `npm run db:backup-migrate` → backup DB and run safe migrations
+- `npm run build:frontend` → build React app
+
+---
+
+## Notes
+
+- New accounts are auto-approved.
+- Student data is isolated by account (no cross-student pipeline leakage).
+- Member Companies tab is backed by the main database company list.
