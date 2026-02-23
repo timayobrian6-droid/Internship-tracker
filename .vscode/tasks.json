@@ -2,6 +2,43 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
+			"label": "🚀 Start all (auto)",
+			"type": "shell",
+			"command": "npm run start:all",
+			"options": {
+				"cwd": "${workspaceFolder}",
+				"shell": {
+					"executable": "/bin/bash",
+					"args": ["-c"]
+				}
+			},
+			"isBackground": true,
+			"problemMatcher": {
+				"owner": "all",
+				"pattern": {
+					"regexp": "^ERROR: (.+)$",
+					"message": 1
+				},
+				"background": {
+					"activeOnStart": true,
+					"beginsPattern": "BACKEND|FRONTEND",
+					"endsPattern": "Compiled successfully|Backend Engine running"
+				}
+			},
+			"runOptions": {
+				"runOn": "folderOpen"
+			},
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"label": "All Services"
+			}
+		},
+		{
 			"label": "Start backend",
 			"type": "shell",
 			"command": "npm run dev",
