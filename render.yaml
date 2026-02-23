@@ -12,5 +12,9 @@ services:
         value: 20
       - key: NODE_ENV
         value: production
+      - key: CI
+        value: false
+      - key: NPM_CONFIG_LEGACY_PEER_DEPS
+        value: true
       - key: JWT_SECRET
         generateValue: true

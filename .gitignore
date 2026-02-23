@@ -1,0 +1,35 @@
+# dependencies
+node_modules/
+internship-frontend/node_modules/
+
+# builds
+internship-frontend/build/
+
+# env files
+.env
+.env.local
+.env.*.local
+
+# sqlite and backup artifacts
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+backups/
+
+# uploads and runtime artifacts
+uploads/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# editor/system
+.vscode/
+.DS_Store
+Thumbs.db
+
+# local/auxiliary artifacts
+*.sqbpro
+VS APP/

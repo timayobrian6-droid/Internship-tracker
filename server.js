@@ -1525,25 +1525,32 @@ app.post('/api/auth/login', (req, res) => {
     const password = (req.body.password || '').toString();
     const adminOnly = Boolean(req.body.admin_only || req.body.adminOnly);
     if ((!username && !email) || !password) return res.status(400).json({ error: 'username/email and password required' });
-    const sql = `SELECT * FROM users WHERE username = ? OR email = ?`;
-    // prefer using provided username first, but allow email in either field
-    db.get(sql, [username || email || null, email || username || null], async (err, user) => {
+    const identifier = username || email;
+    const sql = `SELECT * FROM users WHERE lower(username) = lower(?) OR lower(email) = lower(?)`;
+    db.all(sql, [identifier, identifier], async (err, candidates) => {
         if (err) return res.status(500).json({ error: err.message });
-        if (!user) {
-            console.log('Login failed: user not found for', username || email);
+        if (!candidates || !candidates.length) {
+            console.log('Login failed: user not found for', identifier);
             return res.status(401).json({ error: 'Invalid credentials' });
         }
         try {
+            let user = null;
+            for (const candidate of candidates) {
+                const ok = await bcrypt.compare(password, candidate.password_hash || '');
+                if (ok) {
+                    user = candidate;
+                    break;
+                }
+            }
+            if (!user) {
+                console.log('Login failed: wrong password for identifier', identifier);
+                return res.status(401).json({ error: 'Invalid credentials' });
+            }
             if (adminOnly && user.role !== 'admin') {
                 return res.status(403).json({ error: 'Admin access only' });
             }
             if (!adminOnly && user.role === 'admin') {
                 return res.status(403).json({ error: 'Please sign in from the admin portal' });
-            }
-            const match = await bcrypt.compare(password, user.password_hash || '');
-            if (!match) {
-                console.log('Login failed: wrong password for user', user.id);
-                return res.status(401).json({ error: 'Invalid credentials' });
             }
             const status = (user.status || 'active').toString().toLowerCase();
             if (status === 'pending') {

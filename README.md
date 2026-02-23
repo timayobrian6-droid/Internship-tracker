@@ -34,6 +34,57 @@ Notes:
 - A development admin account is seeded automatically (see `.env.example`).
 - Server runs on port 5000 by default. Update `PORT` in `.env` if needed.
 
+## Codespaces Quick Start
+
+This project includes `.devcontainer/devcontainer.json` so a new Codespace will:
+
+- Install backend dependencies automatically.
+- Install frontend dependencies automatically.
+- Auto-start backend on port `5000` and frontend on port `3000`.
+
+If you already had a Codespace open before this file was added, rebuild it once:
+
+```powershell
+# in Codespaces command palette
+Dev Containers: Rebuild Container
+```
+
+If startup fails for any reason, run manually:
+
+```powershell
+npm ci
+npm --prefix internship-frontend ci
+npm run dev
+```
+
+In another terminal:
+
+```powershell
+npm --prefix internship-frontend start
+```
+
+## Demo Walkthrough (Create Accounts & Try the App)
+
+Use two browser sessions (or normal + incognito) so you can stay logged in as both account types.
+
+1. Open `http://localhost:3000` (or `http://localhost:5000` if using built frontend).
+2. Click **First Time User** → register a **Student** account.
+3. Sign out, then register a **Company** account.
+4. After company login, the app will prompt **Create Company Profile**. Fill it and save.
+5. In company tabs, open **Openings** and create at least one internship opening.
+6. Switch to student login, open **My Profile**, complete profile details, then save.
+7. Go to student **Openings**, find the company opening, and apply.
+8. Switch back to company **Applications** to see and move the application stage.
+
+This gives you a full end-to-end view: registration, profile setup, opening creation, student application, and company-side pipeline updates.
+
+### Optional: Admin Login
+
+- Admin portal URL: `http://localhost:3000/admin`
+- Default dev admin credentials come from `.env` / `.env.example`:
+  - `ADMIN_EMAIL=admin@local`
+  - `ADMIN_PASS=adminpass`
+
 ## Submit by Email (Professor-Friendly)
 
 To share this project by email:

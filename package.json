@@ -6,8 +6,8 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "db:backup-migrate": "node scripts/migrate_and_backup.js",
-    "build:frontend": "npm --prefix internship-frontend install && npm --prefix internship-frontend run build",
-    "render-build": "npm install && npm run build:frontend"
+    "build:frontend": "npm --prefix internship-frontend ci --include=dev && npm --prefix internship-frontend run build",
+    "render-build": "npm ci --include=dev && npm run build:frontend"
   },
   "dependencies": {
     "@faker-js/faker": "^10.3.0",
