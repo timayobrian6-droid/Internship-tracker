@@ -108,7 +108,8 @@ InternConnect solves these by providing a unified platform where students can ea
 
 ### Quick Start (Easiest Option)
 
-**Double-click `start.bat`** (Windows) or run `./start.ps1` (PowerShell) to automatically:
+**Double-click `launch.bat`** to automatically:
+- Check for Node.js installation (downloads if missing)
 - Install all dependencies
 - Start backend server (port 5000)
 - Start frontend server (port 3000)
