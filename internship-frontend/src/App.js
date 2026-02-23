@@ -950,7 +950,7 @@ function App() {
     } catch (e) {
       console.error("Backend offline", e.message);
       if (isBackendWakeupError(e)) {
-        setBackendWakeMessage('Server is waking up on Render. Please wait up to 60 seconds.');
+        setBackendWakeMessage('Server is starting up. Please wait a moment.');
       }
     }
   }, [userRole, isBackendWakeupError]);
@@ -977,7 +977,7 @@ function App() {
       padding: '10px 12px',
       boxShadow: '0 10px 30px rgba(0,0,0,0.12)'
     }}>
-      <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 6 }}>Render cold start detected</div>
+      <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 6 }}>Server starting up</div>
       <div style={{ fontSize: 12, lineHeight: 1.4 }}>{backendWakeMessage}</div>
       <button
         type="button"
@@ -2532,7 +2532,7 @@ function App() {
           }} onError={(e) => {
             setAuthError(e);
             if (isBackendWakeupError({ message: e })) {
-              setBackendWakeMessage('Server is waking up on Render. Please wait up to 60 seconds.');
+              setBackendWakeMessage('Server is starting up. Please wait a moment.');
               checkBackendHealth({ retries: 2, delayMs: 1500 });
             }
           }} />
