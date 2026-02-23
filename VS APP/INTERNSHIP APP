@@ -1,0 +1,155 @@
+from flask import Flask, request, jsonify
+import werkzeug
+
+# Some environments may have Werkzeug where __version__ is not exposed
+# provide a fallback to avoid Flask test client attribute errors
+if not hasattr(werkzeug, '__version__'):
+    werkzeug.__version__ = '3.0.0'
+from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash, check_password_hash
+import os
+from datetime import datetime
+import pkgutil
+import importlib.util
+
+# Some Python versions may have removed `pkgutil.get_loader`; provide a
+# small compatibility shim so Flask's package-finding still works.
+if not hasattr(pkgutil, 'get_loader'):
+    def _pkgutil_get_loader(name):
+        spec = importlib.util.find_spec(name)
+        return getattr(spec, 'loader', None) if spec is not None else None
+    pkgutil.get_loader = _pkgutil_get_loader
+
+import os as _os
+# Provide an explicit instance path so Flask doesn't attempt package discovery
+# which can fail in some execution modes (when __spec__ is None).
+_instance_path = _os.path.join(_os.path.dirname(__file__), 'instance')
+os.makedirs(_instance_path, exist_ok=True)
+app = Flask(__name__, instance_path=_instance_path)
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///internships.db')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET', 'dev-secret')
+
+db = SQLAlchemy(app)
+
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(255), nullable=False)
+
+    def set_password(self, pw):
+        self.password_hash = generate_password_hash(pw)
+
+    def check_password(self, pw):
+        return check_password_hash(self.password_hash, pw)
+
+
+class Internship(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    company = db.Column(db.String(128), nullable=False)
+    position = db.Column(db.String(128), nullable=False)
+    status = db.Column(db.String(32), default='Applied')
+    applied_date = db.Column(db.Date, nullable=True)
+    deadline = db.Column(db.Date, nullable=True)
+    notes = db.Column(db.Text, nullable=True)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'company': self.company,
+            'position': self.position,
+            'status': self.status,
+            'applied_date': self.applied_date.isoformat() if self.applied_date else None,
+            'deadline': self.deadline.isoformat() if self.deadline else None,
+            'notes': self.notes,
+        }
+
+
+def create_tables():
+    with app.app_context():
+        db.create_all()
+        if not User.query.first():
+            demo = User(username='demo')
+            demo.set_password('demo')
+            db.session.add(demo)
+            db.session.commit()
+
+
+@app.route('/register', methods=['POST'])
+def register():
+    data = request.get_json() or {}
+    username = data.get('username')
+    password = data.get('password')
+    if not username or not password:
+        return jsonify({'error': 'username and password required'}), 400
+    if User.query.filter_by(username=username).first():
+        return jsonify({'error': 'username exists'}), 400
+    u = User(username=username)
+    u.set_password(password)
+    db.session.add(u)
+    db.session.commit()
+    return jsonify({'status': 'created'}), 201
+
+
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.get_json() or {}
+    username = data.get('username')
+    password = data.get('password')
+    user = User.query.filter_by(username=username).first()
+    if user and user.check_password(password):
+        return jsonify({'status': 'ok'})
+    return jsonify({'error': 'invalid credentials'}), 401
+
+
+@app.route('/api/internships', methods=['GET'])
+def api_list_internships():
+    items = Internship.query.order_by(Internship.deadline.asc()).all()
+    return jsonify([i.to_dict() for i in items])
+
+
+@app.route('/api/internships', methods=['POST'])
+def api_create_internship():
+    data = request.get_json() or {}
+    company = data.get('company')
+    position = data.get('position')
+    if not company or not position:
+        return jsonify({'error': 'company and position are required'}), 400
+    inst = Internship(company=company, position=position, status=data.get('status', 'Applied'), notes=data.get('notes', ''))
+    if data.get('applied_date'):
+        inst.applied_date = datetime.fromisoformat(data['applied_date']).date()
+    if data.get('deadline'):
+        inst.deadline = datetime.fromisoformat(data['deadline']).date()
+    db.session.add(inst)
+    db.session.commit()
+    return jsonify(inst.to_dict()), 201
+
+
+@app.route('/api/internships/<int:id>', methods=['PUT', 'PATCH'])
+def api_update_internship(id):
+    inst = Internship.query.get_or_404(id)
+    data = request.get_json() or {}
+    inst.company = data.get('company', inst.company)
+    inst.position = data.get('position', inst.position)
+    inst.status = data.get('status', inst.status)
+    inst.notes = data.get('notes', inst.notes)
+    if 'applied_date' in data:
+        inst.applied_date = datetime.fromisoformat(data['applied_date']).date() if data.get('applied_date') else None
+    if 'deadline' in data:
+        inst.deadline = datetime.fromisoformat(data['deadline']).date() if data.get('deadline') else None
+    db.session.commit()
+    return jsonify(inst.to_dict())
+
+
+@app.route('/api/internships/<int:id>', methods=['DELETE'])
+def api_delete_internship(id):
+    inst = Internship.query.get_or_404(id)
+    db.session.delete(inst)
+    db.session.commit()
+    return jsonify({'status': 'deleted'})
+
+
+if __name__ == '__main__':
+    create_tables()
+    app.run(debug=True)
