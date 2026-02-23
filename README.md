@@ -1,152 +1,151 @@
-# InternConnect Enterprise Tracker 🚀
+# InternConnect - Internship Management Platform
 
-A high-fidelity, full-stack internship management system built with React, Node.js, and SQLite.
+InternConnect is a comprehensive web application that connects students with internship opportunities and helps companies manage their hiring pipeline efficiently.
 
-## Key Features
+## What It Does
 
-- **Kanban Pipeline**: Drag-and-drop style workflow management.
-- **Placement Analytics**: Real-time aggregation of hiring success rates.
-- **Global Search**: Performance-optimized search across students and companies.
-- **Reporting**: Exportable CSV and PDF placement summaries.
+InternConnect provides a complete internship management solution with:
+- **Student Portal**: Browse and apply to internships, track applications, build profiles
+- **Company Portal**: Post openings, manage applications, track hiring progress
+- **Admin Dashboard**: System-wide analytics and user management
+- **Real-time Updates**: Live application status tracking for all users
 
-## Setup Instructions
+## Problem It Solves
 
-Backend (root)
+**For Students:**
+- **Information Overload**: Scattered internship listings across multiple platforms
+- **Lost Applications**: No centralized tracking of application status
+- **Poor Communication**: Delayed or missing feedback from companies
+- **Inefficient Process**: Manual follow-ups and status checks
 
-1. Copy `.env.example` to `.env` and update values.
-2. Install backend deps and run:
+**For Companies:**
+- **Application Management**: Overwhelming volume of applications to organize
+- **Communication Gaps**: Difficulty coordinating between hiring team members
+- **Progress Tracking**: Lack of visibility into hiring pipeline stages
+- **Time-Consuming Process**: Manual status updates and candidate communication
 
-```powershell
+InternConnect solves these by providing a unified platform where students can easily find and track opportunities, while companies can efficiently manage their entire hiring workflow.
+
+## Student Frontend Guide
+
+### Getting Started
+1. Visit the application and click "First Time User"
+2. Register as a Student with your email and password
+3. Complete your profile with education, skills, and preferences
+
+### Dashboard Tab
+- **Overview**: See your application statistics and recent activity
+- **Quick Actions**: Apply to recommended internships, update profile
+- **Notifications**: View important updates about your applications
+
+### Profile Tab
+- **Personal Information**: Update contact details and basic info
+- **Education**: Add schools, degrees, GPA, and graduation dates
+- **Skills & Experience**: List technical skills, projects, and work experience
+- **Resume Upload**: Upload your resume/CV for applications
+- **Preferences**: Set location preferences, salary expectations, and job types
+
+### Openings Tab
+- **Browse Internships**: Search and filter available positions
+- **Filters**: Location, company, salary range, job type, skills required
+- **Job Details**: View full job descriptions, requirements, and company info
+- **Save for Later**: Bookmark interesting opportunities
+- **Apply**: Submit applications directly through the platform
+
+### Applications Tab
+- **Application History**: View all your submitted applications
+- **Status Tracking**: See current stage (Applied, Screening, Interview, Offer, etc.)
+- **Company Communication**: View messages and updates from companies
+- **Withdraw Applications**: Remove applications if you change your mind
+
+## Company Frontend Guide
+
+### Getting Started
+1. Register as a Company with your email and password
+2. Complete your company profile with business information
+3. Start posting internship openings
+
+### Dashboard Tab
+- **Overview Metrics**: Total applications, active openings, hiring progress
+- **Recent Activity**: New applications, upcoming interviews, recent hires
+- **Quick Stats**: Application volume, conversion rates, time-to-hire
+
+### Profile Tab
+- **Company Information**: Business details, industry, company size
+- **Contact Information**: Hiring manager details and contact methods
+- **Company Description**: About your company and culture
+- **Logo & Branding**: Upload company logo and set branding preferences
+
+### Openings Tab
+- **Create New Opening**: Post new internship positions
+- **Job Details**: Title, description, requirements, salary, location
+- **Application Settings**: Application deadlines, required documents
+- **Edit Existing**: Modify active job postings
+- **Close/Open Positions**: Control application acceptance
+
+### Applications Tab (Kanban Pipeline)
+- **Applied**: New applications awaiting review
+- **Screening**: Initial candidate evaluation
+- **Interview**: Scheduled and completed interviews
+- **Offer**: Extended job offers
+- **Hired**: Successfully placed candidates
+- **Rejected**: Unsuccessful applications
+
+**Pipeline Features:**
+- Drag and drop applications between stages
+- Add notes and feedback for each candidate
+- Schedule interviews and track outcomes
+- Send automated status updates to candidates
+- Export candidate data for record keeping
+
+### Analytics Tab
+- **Hiring Metrics**: Success rates, time-to-hire, application volume
+- **Candidate Insights**: Popular skills, education levels, locations
+- **Pipeline Efficiency**: Bottlenecks and optimization opportunities
+- **Custom Reports**: Generate CSV/PDF reports for management
+
+## Deployment Instructions
+
+### Local Development
+```bash
+# Install dependencies
 npm install
-npm run dev
-```
+cd internship-frontend && npm install && cd ..
 
-Frontend (internship-frontend)
-
-```powershell
-cd internship-frontend
-npm install
+# Start the application
 npm start
 ```
 
-Notes:
+This runs both backend and frontend in single-port mode at `http://localhost:3001`
 
-- A development admin account is seeded automatically (see `.env.example`).
-- Server runs on port 5000 by default. Update `PORT` in `.env` if needed.
+### Production Deployment
 
-## Codespaces Quick Start
+#### Option 1: Render (Recommended)
+1. Push code to GitHub repository
+2. Connect to Render dashboard
+3. Create new Blueprint deployment
+4. Use included `render.yaml` configuration
+5. Deploy - Render handles everything automatically
 
-This project includes `.devcontainer/devcontainer.json` so a new Codespace will:
+#### Option 2: Manual Server Deployment
+1. Set up Node.js server (version 16+)
+2. Clone repository and install dependencies
+3. Configure environment variables (copy `.env.example` to `.env`)
+4. Build frontend: `cd internship-frontend && npm run build`
+5. Start server: `npm start`
+6. Configure reverse proxy (nginx) for production
 
-- Install backend dependencies automatically.
-- Install frontend dependencies automatically.
-- Auto-start backend on port `5000` and frontend on port `3000`.
+#### Environment Variables Required
+- `DATABASE_URL`: SQLite database path
+- `JWT_SECRET`: Random string for authentication
+- `ADMIN_EMAIL`: Admin login email
+- `ADMIN_PASS`: Admin login password
+- `PORT`: Server port (default: 3001)
 
-If you already had a Codespace open before this file was added, rebuild it once:
+### Database Setup
+The application uses SQLite. On first run, it automatically:
+- Creates database schema
+- Seeds admin account
+- Applies any pending migrations
 
-```powershell
-# in Codespaces command palette
-Dev Containers: Rebuild Container
-```
-
-If startup fails for any reason, run manually:
-
-```powershell
-npm ci
-npm --prefix internship-frontend ci
-npm run dev
-```
-
-In another terminal:
-
-```powershell
-npm --prefix internship-frontend start
-```
-
-## Demo Walkthrough (Create Accounts & Try the App)
-
-Use two browser sessions (or normal + incognito) so you can stay logged in as both account types.
-
-1. Open `http://localhost:3000` (or `http://localhost:5000` if using built frontend).
-2. Click **First Time User** → register a **Student** account.
-3. Sign out, then register a **Company** account.
-4. After company login, the app will prompt **Create Company Profile**. Fill it and save.
-5. In company tabs, open **Openings** and create at least one internship opening.
-6. Switch to student login, open **My Profile**, complete profile details, then save.
-7. Go to student **Openings**, find the company opening, and apply.
-8. Switch back to company **Applications** to see and move the application stage.
-
-This gives you a full end-to-end view: registration, profile setup, opening creation, student application, and company-side pipeline updates.
-
-### Optional: Admin Login
-
-- Admin portal URL: `http://localhost:3000/admin`
-- Default dev admin credentials come from `.env` / `.env.example`:
-  - `ADMIN_EMAIL=admin@local`
-  - `ADMIN_PASS=adminpass`
-
-## Submit by Email (Professor-Friendly)
-
-To share this project by email:
-
-1. Zip the whole project folder (include both root and `internship-frontend`).
-2. Send the ZIP file to your professor.
-3. Ask them to extract it, then double-click `launch.bat`.
-
-If Node.js is missing, `launch.bat` now opens the official Node.js LTS download page automatically and then continues after installation.
-
-What happens after launch:
-
-- Preferred mode: backend starts and serves the built frontend at `http://localhost:5000`
-- Fallback mode: backend on `http://localhost:5000` and frontend dev server on `http://localhost:3000`
-
-Optional manual run (if they prefer terminal):
-
-```powershell
-npm install
-npm start
-```
-
-Open:
-
-```powershell
-http://localhost:5000
-```
-
-If `internship-frontend/build` is missing, use dev mode:
-
-```powershell
-npm run dev
-```
-
-In another terminal:
-
-```powershell
-npm --prefix internship-frontend install
-npm --prefix internship-frontend start
-```
-
-DB backup & migration
-
-Before running any schema-changing scripts, create a backup and apply safe migrations:
-
-```powershell
-npm run db:backup-migrate
-```
-
-This copies `internship_final.db` into `backups/` with a timestamp and applies idempotent migrations (adds missing columns/tables).
-
-## Technical Roadmap
-
-Integrated 28 steps including UI Library setup, Stage Filtering, and Unit Testing.
-
-## Permanent Public Link (Recommended)
-
-This repo is Render-ready.
-
-1. Put the project on GitHub (without `node_modules`).
-2. In Render, choose **New + → Blueprint**.
-3. Select your GitHub repo; Render will use `render.yaml`.
-4. After deploy, share the Render URL with your professor.
-
-Detailed steps: see `DEPLOY_RENDER.md`.
+For production, ensure proper backup procedures are in place.
