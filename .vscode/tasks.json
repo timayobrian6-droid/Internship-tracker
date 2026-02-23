@@ -2,60 +2,84 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "Start frontend",
-			"type": "shell",
-			"command": "npm",
-			"args": [
-				"--prefix",
-				"internship-frontend",
-				"start"
-			],
-			"isBackground": true
-		},
-		{
-			"label": "Start frontend (cmd)",
-			"type": "shell",
-			"command": "cmd",
-			"args": [
-				"/c",
-				"npm",
-				"--prefix",
-				"internship-frontend",
-				"start"
-			],
-			"isBackground": true
-		},
-		{
-			"label": "Start frontend (npm.cmd)",
-			"type": "shell",
-			"command": "npm.cmd",
-			"args": [
-				"--prefix",
-				"internship-frontend",
-				"start"
-			],
-			"isBackground": true
-		},
-		{
-			"label": "Start frontend (npm.cmd on 3000)",
-			"type": "shell",
-			"command": "npm.cmd",
-			"args": [
-				"--prefix",
-				"internship-frontend",
-				"start"
-			],
-			"isBackground": true
-		},
-		{
 			"label": "Start backend",
 			"type": "shell",
-			"command": "npm.cmd",
-			"args": [
-				"run",
-				"dev"
-			],
-			"isBackground": true
+			"command": "npm run dev",
+			"options": {
+				"cwd": "${workspaceFolder}",
+				"shell": {
+					"executable": "/bin/bash",
+					"args": ["-c"]
+				}
+			},
+			"isBackground": true,
+			"problemMatcher": {
+				"owner": "backend",
+				"pattern": {
+					"regexp": "^ERROR: (.+)$",
+					"message": 1
+				},
+				"background": {
+					"activeOnStart": true,
+					"beginsPattern": "^\\[nodemon\\] starting",
+					"endsPattern": "Backend Engine running on port"
+				}
+			},
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"label": "Backend"
+			}
+		},
+		{
+			"label": "Start frontend",
+			"type": "shell",
+			"command": "BROWSER=none npm start",
+			"options": {
+				"cwd": "${workspaceFolder}/internship-frontend",
+				"shell": {
+					"executable": "/bin/bash",
+					"args": ["-c"]
+				},
+				"env": {
+					"BROWSER": "none",
+					"PORT": "3000"
+				}
+			},
+			"isBackground": true,
+			"problemMatcher": {
+				"owner": "frontend",
+				"pattern": {
+					"regexp": "^(ERROR|Warning): (.+)$",
+					"message": 2
+				},
+				"background": {
+					"activeOnStart": true,
+					"beginsPattern": "Starting the development server",
+					"endsPattern": "Compiled successfully|Failed to compile"
+				}
+			},
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"label": "Frontend"
+			}
+		},
+		{
+			"label": "Start all",
+			"dependsOn": ["Start backend", "Start frontend"],
+			"dependsOrder": "sequence",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			},
+			"problemMatcher": []
 		}
 	]
 }
