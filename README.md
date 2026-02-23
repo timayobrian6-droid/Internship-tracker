@@ -120,14 +120,7 @@ This runs both backend and frontend in single-port mode at `http://localhost:300
 
 ### Production Deployment
 
-#### Option 1: Render (Recommended)
-1. Push code to GitHub repository
-2. Connect to Render dashboard
-3. Create new Blueprint deployment
-4. Use included `render.yaml` configuration
-5. Deploy - Render handles everything automatically
-
-#### Option 2: Manual Server Deployment
+#### Manual Server Deployment
 1. Set up Node.js server (version 16+)
 2. Clone repository and install dependencies
 3. Configure environment variables (copy `.env.example` to `.env`)
@@ -138,14 +131,11 @@ This runs both backend and frontend in single-port mode at `http://localhost:300
 #### Environment Variables Required
 - `DATABASE_URL`: SQLite database path
 - `JWT_SECRET`: Random string for authentication
-- `ADMIN_EMAIL`: Admin login email
-- `ADMIN_PASS`: Admin login password
 - `PORT`: Server port (default: 3001)
 
 ### Database Setup
 The application uses SQLite. On first run, it automatically:
 - Creates database schema
-- Seeds admin account
 - Applies any pending migrations
 
 For production, ensure proper backup procedures are in place.
