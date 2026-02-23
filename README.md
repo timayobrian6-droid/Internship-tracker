@@ -13,20 +13,96 @@ InternConnect provides a complete internship management solution with:
 ## Problem It Solves
 
 **For Students:**
-- **Information Overload**: Scattered internship listings across multiple platforms
-- **Lost Applications**: No centralized tracking of application status
-- **Poor Communication**: Delayed or missing feedback from companies
-- **Inefficient Process**: Manual follow-ups and status checks
+- Scattered internship listings across multiple platforms
+- No centralized tracking of application status
+- Delayed or missing feedback from companies
+- Manual follow-ups and status checks
 
 **For Companies:**
-- **Application Management**: Overwhelming volume of applications to organize
-- **Communication Gaps**: Difficulty coordinating between hiring team members
-- **Progress Tracking**: Lack of visibility into hiring pipeline stages
-- **Time-Consuming Process**: Manual status updates and candidate communication
+- Overwhelming volume of applications to organize
+- Difficulty coordinating between hiring team members
+- Lack of visibility into hiring pipeline stages
+- Manual status updates and candidate communication
 
 InternConnect solves these by providing a unified platform where students can easily find and track opportunities, while companies can efficiently manage their entire hiring workflow.
 
-## Student Frontend Guide
+---
+
+## How to Run
+
+### Step 1 — Install dependencies (first time only)
+
+```bash
+npm install
+npm --prefix internship-frontend install
+```
+
+---
+
+### Step 2 — Start the servers
+
+**Option A: Two separate terminals (recommended)**
+
+Open two terminals side by side.
+
+**Terminal 1 — Backend:**
+```bash
+npm run dev
+```
+
+**Terminal 2 — Frontend:**
+```bash
+npm --prefix internship-frontend start
+```
+
+**Option B: One terminal (both at once)**
+```bash
+npm run start:all
+```
+
+Press `Ctrl+C` to stop everything.
+
+---
+
+### Step 3 — Open the app
+
+- **Laptop / local:** open `http://localhost:3000`
+- **GitHub Codespaces:** click the **Ports** tab in VS Code → click the globe icon next to port **3000**
+
+> In Codespaces, only port 3000 needs to be open. API calls are automatically proxied from port 3000 to the backend on port 5000 — no extra config needed.
+
+---
+
+### Environment variables (optional / production)
+
+Create a `.env` file in the project root:
+
+```
+JWT_SECRET=some_long_random_string
+PORT=5000
+```
+
+Email and SMS (optional):
+```
+SMTP_HOST=
+SMTP_PORT=587
+SMTP_USER=
+SMTP_PASS=
+SMTP_FROM=
+TWILIO_ACCOUNT_SID=
+TWILIO_AUTH_TOKEN=
+TWILIO_PHONE_NUMBER=
+```
+
+---
+
+### Database
+
+Uses SQLite — no setup needed. The database file is created automatically on first run.
+
+---
+
+## Student Guide
 
 ### Getting Started
 1. Visit the application and click "First Time User"
@@ -58,7 +134,9 @@ InternConnect solves these by providing a unified platform where students can ea
 - **Company Communication**: View messages and updates from companies
 - **Withdraw Applications**: Remove applications if you change your mind
 
-## Company Frontend Guide
+---
+
+## Company Guide
 
 ### Getting Started
 1. Register as a Company with your email and password
@@ -104,77 +182,18 @@ InternConnect solves these by providing a unified platform where students can ea
 - **Pipeline Efficiency**: Bottlenecks and optimization opportunities
 - **Custom Reports**: Generate CSV/PDF reports for management
 
-## Deployment Instructions
+---
 
-### Quick Start (Easiest Option)
+## Recent Changes
 
-**Double-click `launch.bat`** to automatically:
-- Check for Node.js installation (downloads if missing)
-- Install all dependencies
-- Start backend server (port 5000)
-- Start frontend server (port 3000)
-
-**Access your app at:** `http://localhost:3000`
-
-### GitHub Codespaces (Cloud Development)
-
-**Phase 1: Automatic Startup**
-When you create a new Codespace, services should start automatically on ports 5000 (backend) and 3000 (frontend).
-
-**Phase 2: Manual Installation (if dependencies aren't installed)**
-```bash
-npm ci
-npm --prefix internship-frontend ci
-```
-
-**Phase 3: Manual Startup (if services don't start automatically)**
-
-*Terminal 1 - Backend:*
-```bash
-npm run dev
-```
-
-*Terminal 2 - Frontend:*
-```bash
-npm --prefix internship-frontend start
-```
-
-**Quick Setup (Copy & Paste):**
-1. Wait 1-2 minutes for automatic startup
-2. If failed → Run Phase 2 commands in main terminal
-3. If still failed → Run Phase 3 commands in separate terminals
-4. Access at: `http://localhost:3000`
-
-### Local Development
-```bash
-# Install dependencies
-npm install
-cd internship-frontend && npm install && cd ..
-
-# Start the application
-npm start
-```
-
-This runs both backend and frontend in single-port mode at `http://localhost:3001`
-
-### Production Deployment
-
-#### Manual Server Deployment
-1. Set up Node.js server (version 16+)
-2. Clone repository and install dependencies
-3. Configure environment variables (copy `.env.example` to `.env`)
-4. Build frontend: `cd internship-frontend && npm run build`
-5. Start server: `npm start`
-6. Configure reverse proxy (nginx) for production
-
-#### Environment Variables Required
-- `DATABASE_URL`: SQLite database path
-- `JWT_SECRET`: Random string for authentication
-- `PORT`: Server port (default: 3001)
-
-### Database Setup
-The application uses SQLite. On first run, it automatically:
-- Creates database schema
-- Applies any pending migrations
-
-For production, ensure proper backup procedures are in place.
+| What | Why |
+|---|---|
+| Added `"proxy"` to frontend `package.json` | Fixes "Network Error" in Codespaces — API calls route through port 3000 internally |
+| Removed hardcoded `:5000` from frontend API URLs | App works on both laptop and Codespaces without changing any code |
+| Added `compression` middleware | All API responses are gzip compressed — 50–80% smaller payloads |
+| Added 13 SQLite indexes | Faster queries on applications, users, subscriptions, audit logs |
+| Removed BLOBs from `/api/companies` responses | Company list no longer sends MB of image data in every JSON response |
+| Fixed `authenticateToken` middleware | Removed redundant DB query on every authenticated request |
+| Admin dashboard loads in parallel | All 4 admin data fetches run simultaneously instead of one by one |
+| Fixed `.vscode/tasks.json` | Removed Windows-only `npm.cmd`/`cmd` commands, uses bash now |
+| Removed auto-start on folder open | VS Code no longer launches servers automatically — run them manually |
