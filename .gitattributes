@@ -1,2 +1,5 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Shell scripts must keep LF endings (they run on Linux in Codespaces)
+*.sh text eol=lf

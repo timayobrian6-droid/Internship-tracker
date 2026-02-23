@@ -124,8 +124,15 @@ function AuthForm({ view = 'login', resetToken = '', adminOnly = false, onSwitch
         const res = await axios.post(`${API}/auth/login`, { username, password, admin_only: adminOnly });
         onSuccess(res.data);
       } else if (view === 'register') {
-        await axios.post(`${API}/auth/register`, { username, email, password, role });
-        const res = await axios.post(`${API}/auth/login`, { username, password, admin_only: false });
+        // ── Client-side validation ──
+        if (!username.trim()) { setHelperText('Username is required'); setLoading(false); return; }
+        if (username.trim().length < 3) { setHelperText('Username must be at least 3 characters'); setLoading(false); return; }
+        if (!email.trim()) { setHelperText('Email is required'); setLoading(false); return; }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) { setHelperText('Please enter a valid email address'); setLoading(false); return; }
+        if (password.length < 6) { setHelperText('Password must be at least 6 characters'); setLoading(false); return; }
+
+        await axios.post(`${API}/auth/register`, { username: username.trim(), email: email.trim(), password, role });
+        const res = await axios.post(`${API}/auth/login`, { username: username.trim(), password, admin_only: false });
         onSuccess(res.data);
       } else if (view === 'forgot') {
         await axios.post(`${API}/auth/request-password-reset`, { email });
@@ -140,6 +147,7 @@ function AuthForm({ view = 'login', resetToken = '', adminOnly = false, onSwitch
       }
     } catch (err) {
       const msg = err?.response?.data?.error || err.message;
+      setHelperText(msg);
       onError(msg);
     } finally { setLoading(false); }
   };
@@ -168,7 +176,7 @@ function AuthForm({ view = 'login', resetToken = '', adminOnly = false, onSwitch
           </select>
         </>
       )}
-      {helperText && <div style={{ fontSize: 12, color: helperText.toLowerCase().includes('match') ? '#ef4444' : '#16a34a' }}>{helperText}</div>}
+      {helperText && <div style={{ fontSize: 12, color: (helperText.toLowerCase().includes('match') || helperText.toLowerCase().includes('must') || helperText.toLowerCase().includes('required') || helperText.toLowerCase().includes('valid') || helperText.toLowerCase().includes('already') || helperText.toLowerCase().includes('at least')) ? '#ef4444' : '#16a34a' }}>{helperText}</div>}
       <div style={{ display: 'flex', gap: 10 }}>
         <button type="submit" disabled={loading} className="bg-blue-600 text-white px-4 py-2 rounded">
           {view === 'login' ? 'Sign In' : view === 'register' ? 'Register' : view === 'forgot' ? 'Send Reset Link' : 'Reset Password'}

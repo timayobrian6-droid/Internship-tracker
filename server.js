@@ -175,6 +175,11 @@ db.serialize(() => {
             });
         }
     });
+
+    // Ensure username uniqueness at DB level (safe if index already exists)
+    db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username ON users(username) WHERE username IS NOT NULL`, [], (err) => {
+        if (err) console.error('Could not create unique index on users.username:', err.message);
+    });
 });
 
 // Ensure core tables exist
@@ -247,11 +252,26 @@ db.serialize(() => {
         });
     });
 
-    // improve concurrency: WAL + busy_timeout to reduce SQLITE_BUSY on ALTERs
-    db.run("PRAGMA journal_mode = WAL", [], (errW) => { if (errW) console.error('Could not set WAL mode', errW.message); else console.log('WAL mode enabled'); });
-    db.run("PRAGMA busy_timeout = 5000", [], (errB) => { if (errB) console.error('Could not set busy_timeout', errB.message); else console.log('busy_timeout set to 5000ms'); });
+});
 
-    // helper to retry ALTER operations when database is briefly locked
+// Ensure core tables exist
+db.serialize(() => {
+    // Enable WAL mode and busy timeout for better concurrency
+    db.run("PRAGMA journal_mode = WAL", [], (errW) => {
+        if (errW) console.error('Could not set WAL mode', errW.message);
+        else console.log('WAL mode enabled for better performance');
+    });
+    db.run("PRAGMA busy_timeout = 5000", [], (errB) => {
+        if (errB) console.error('Could not set busy_timeout', errB.message);
+        else console.log('busy_timeout set to 5000ms');
+    });
+    db.run("PRAGMA synchronous = NORMAL", [], (errS) => {
+        if (errS) console.error('Could not set synchronous mode', errS.message);
+    });
+    db.run("PRAGMA cache_size = -64000", [], (errC) => {
+        if (errC) console.error('Could not set cache size', errC.message);
+    });
+
     function runAlterWithRetry(alterSql, params = [], attempt = 1, onSuccess) {
         const maxAttempts = 8;
         db.run(alterSql, params, (err2) => {
@@ -568,17 +588,22 @@ db.serialize(() => {
     });
 
     // Seed a default admin user if none exists (development only)
-    db.get("SELECT COUNT(*) as cnt FROM users", [], async (err, row) => {
+    db.get("SELECT COUNT(*) as cnt FROM users", [], (err, row) => {
         if (err) return console.error('Could not count users', err.message);
         if (row.cnt === 0) {
             const defaultEmail = process.env.ADMIN_EMAIL || '';
             const defaultPass = process.env.ADMIN_PASS || '';
             if (!defaultEmail || !defaultPass) return;
-            const hash = await bcrypt.hash(defaultPass, 10);
-            db.run(`INSERT INTO users (email, password_hash, role, status) VALUES (?, ?, ?, ?)`, [defaultEmail, hash, 'admin', 'active'], function(err) {
-                if (err) console.error('Could not create default admin', err.message);
-                else console.log('Created default admin:', defaultEmail);
-            });
+            // Use bcrypt.hashSync for synchronous operation
+            try {
+                const hash = bcrypt.hashSync(defaultPass, 10);
+                db.run(`INSERT INTO users (email, password_hash, role, status) VALUES (?, ?, ?, ?)`, [defaultEmail, hash, 'admin', 'active'], function(err) {
+                    if (err) console.error('Could not create default admin', err.message);
+                    else console.log('Created default admin:', defaultEmail);
+                });
+            } catch (e) {
+                console.error('Could not hash password for default admin', e.message);
+            }
         }
     });
 });
@@ -597,6 +622,9 @@ app.get('/api/students', authenticateToken, (req, res) => {
             if (!row) return res.status(404).json({ error: 'Not found' });
             return res.json([row]);
         });
+    } else if (req.user.role === 'student' && !req.user.studentId) {
+        // New student with no profile yet — return empty (sandboxed)
+        return res.json([]);
     } else {
         return res.status(403).json({ error: 'Forbidden' });
     }
@@ -685,8 +713,18 @@ app.patch('/api/support-tickets/:id/reply', authenticateToken, authorizeRole(['a
 
 app.get('/api/member-companies', authenticateToken, authorizeRole(['student']), (req, res) => {
     const studentId = req.user.studentId;
-    if (!studentId) return res.status(400).json({ error: 'Student profile not linked to account' });
+    // If student has no profile yet, still show all companies (unsubscribed)
+    if (!studentId) {
         const sql = `SELECT c.id, c.name, c.industry, c.openings, c.location, c.overview, c.mission, c.vision,
+                       0 as subscribed
+                FROM companies c
+                ORDER BY c.name`;
+        return db.all(sql, [], (err, rows) => {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json(rows || []);
+        });
+    }
+    const sql = `SELECT c.id, c.name, c.industry, c.openings, c.location, c.overview, c.mission, c.vision,
                        CASE WHEN s.id IS NULL THEN 0 ELSE 1 END as subscribed
                 FROM companies c
                 LEFT JOIN student_company_subscriptions s
@@ -1474,6 +1512,35 @@ app.post('/api/auth/register', async (req, res) => {
         if (role === 'admin') return res.status(403).json({ error: 'Admin registration is disabled' });
         if ((!username && !email) || !password) return res.status(400).json({ error: 'username/email and password required' });
 
+        // ── Explicit uniqueness check BEFORE insert ──────────────
+        const checkUnique = () => new Promise((resolve, reject) => {
+            if (username) {
+                db.get(`SELECT id FROM users WHERE lower(username) = lower(?)`, [username], (err, row) => {
+                    if (err) return reject(err);
+                    if (row) return reject(new Error('Username already exists. Please choose another username.'));
+                    if (email) {
+                        db.get(`SELECT id FROM users WHERE lower(email) = lower(?)`, [email], (err2, row2) => {
+                            if (err2) return reject(err2);
+                            if (row2) return reject(new Error('Email already exists. Please sign in or use another email.'));
+                            resolve();
+                        });
+                    } else resolve();
+                });
+            } else if (email) {
+                db.get(`SELECT id FROM users WHERE lower(email) = lower(?)`, [email], (err, row) => {
+                    if (err) return reject(err);
+                    if (row) return reject(new Error('Email already exists. Please sign in or use another email.'));
+                    resolve();
+                });
+            } else resolve();
+        });
+
+        try {
+            await checkUnique();
+        } catch (dupErr) {
+            return res.status(409).json({ error: dupErr.message });
+        }
+
         getAppSetting('require_approval', '0', async (errSetting, value) => {
             if (errSetting) return res.status(500).json({ error: errSetting.message });
             const status = 'active';
@@ -2126,16 +2193,23 @@ function authorizeRole(allowed = []) {
 
 // Applications endpoints with authorization
 app.get('/api/applications', authenticateToken, (req, res) => {
-    // students see only their applications; admins see all; companies see company-specific
+    // students see only their OWN applications; admins see all; companies see company-specific
+    // New accounts with no studentId/companyId see nothing (sandboxed)
+    if (req.user.role === 'student' && !req.user.studentId) {
+        return res.json([]);
+    }
+    if (req.user.role === 'company' && !req.user.companyId) {
+        return res.json([]);
+    }
     let sql = `SELECT a.*, s.full_name as student_name, c.name as company_name
                FROM applications a
                LEFT JOIN students s ON s.id = a.student_id
                LEFT JOIN companies c ON c.id = a.company_id`;
     const params = [];
-    if (req.user.role === 'student' && req.user.studentId) {
+    if (req.user.role === 'student') {
         sql += ` WHERE a.student_id = ?`;
         params.push(req.user.studentId);
-    } else if (req.user.role === 'company' && req.user.companyId) {
+    } else if (req.user.role === 'company') {
         sql += ` WHERE a.company_id = ? AND a.stage != 'Withdrawn'`;
         params.push(req.user.companyId);
     }
@@ -2363,7 +2437,8 @@ app.get('/healthz', (req, res) => {
 
 // Client-side routing: Serve index.html for any unknown route
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'internship-frontend/build', 'index.html'));
+    res.sendFile(path.join(__dirname, 'internship-frontend', 'build', 'index.html'));
 });
 
 server.listen(PORT, () => console.log(`Backend Engine running on port ${PORT}`));
+
