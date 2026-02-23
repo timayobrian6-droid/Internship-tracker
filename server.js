@@ -480,6 +480,27 @@ db.serialize(() => {
         value TEXT
     )`);
 
+    // Performance indexes for frequent lookups and dashboard queries
+    db.run(`CREATE INDEX IF NOT EXISTS idx_users_lower_username ON users(lower(username))`);
+    db.run(`CREATE INDEX IF NOT EXISTS idx_users_lower_email ON users(lower(email))`);
+    db.run(`CREATE INDEX IF NOT EXISTS idx_users_role ON users(role)`);
+
+    db.run(`CREATE INDEX IF NOT EXISTS idx_applications_student_id ON applications(student_id)`);
+    db.run(`CREATE INDEX IF NOT EXISTS idx_applications_company_id ON applications(company_id)`);
+    db.run(`CREATE INDEX IF NOT EXISTS idx_applications_company_stage ON applications(company_id, stage)`);
+    db.run(`CREATE INDEX IF NOT EXISTS idx_applications_created_at ON applications(created_at)`);
+
+    db.run(`CREATE INDEX IF NOT EXISTS idx_openings_company_created ON company_openings(company_id, created_at)`);
+    db.run(`CREATE INDEX IF NOT EXISTS idx_openings_deadline ON company_openings(deadline)`);
+
+    db.run(`CREATE INDEX IF NOT EXISTS idx_subscriptions_student_id ON student_company_subscriptions(student_id)`);
+    db.run(`CREATE INDEX IF NOT EXISTS idx_subscriptions_company_id ON student_company_subscriptions(company_id)`);
+
+    db.run(`CREATE INDEX IF NOT EXISTS idx_support_tickets_user_created ON support_tickets(user_id, created_at)`);
+    db.run(`CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs(created_at)`);
+    db.run(`CREATE INDEX IF NOT EXISTS idx_audit_logs_action_entity ON audit_logs(action_type, entity_type, created_at)`);
+    db.run(`CREATE INDEX IF NOT EXISTS idx_password_reset_token_hash ON password_reset_tokens(token_hash)`);
+
     const defaultSettings = {
         branding_name: 'Internship Tracker',
         branding_mission: 'Connect students to real-world internships through transparent pipelines, proactive support, and accountable partnerships.',
@@ -908,7 +929,7 @@ app.post('/api/companies', authenticateToken, (req, res) => {
         db.run(sql, [name, industry, openings || 0, location || null, contact_person || null, contact_email || null, contact_phone || null, overview || null, mission || null, vision || null], function(err) {
             if (err) return res.status(500).json({ error: err.message });
             const companyId = this.lastID;
-            db.get(`SELECT * FROM companies WHERE id = ?`, [companyId], (err3, companyRow) => {
+            db.get(`SELECT id, name, industry, openings, location, contact_person, contact_email, contact_phone, overview, mission, vision FROM companies WHERE id = ?`, [companyId], (err3, companyRow) => {
                 if (req.user.role === 'company') {
                     db.run(`UPDATE users SET company_id = ? WHERE id = ?`, [companyId, req.user.userId], function(err2) {
                         if (err2) console.error('Could not link company to user', err2.message);
@@ -926,7 +947,7 @@ app.post('/api/companies', authenticateToken, (req, res) => {
 
 app.get('/api/companies/:id', (req, res) => {
     const { id } = req.params;
-    db.get(`SELECT * FROM companies WHERE id = ?`, [id], (err, row) => {
+    db.get(`SELECT id, name, industry, openings, location, contact_person, contact_email, contact_phone, overview, mission, vision FROM companies WHERE id = ?`, [id], (err, row) => {
         if (err) return res.status(500).json({ error: err.message });
         if (!row) return res.status(404).json({ error: 'Not found' });
         res.json(row);
@@ -1570,7 +1591,7 @@ app.post('/api/auth/register', async (req, res) => {
                         res.json({ token, user: { ...payload, displayName, status } });
                     });
                 } else if (company_id) {
-                    db.get(`SELECT * FROM companies WHERE id = ?`, [company_id], (err3, companyRow) => {
+                    db.get(`SELECT name FROM companies WHERE id = ?`, [company_id], (err3, companyRow) => {
                         const displayName = companyRow ? companyRow.name : (username || email || 'User');
                         const token = jwt.sign({ ...payload }, JWT_SECRET, { expiresIn: '8h' });
                         res.json({ token, user: { ...payload, displayName, status } });
