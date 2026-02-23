@@ -106,6 +106,26 @@ InternConnect solves these by providing a unified platform where students can ea
 
 ## Deployment Instructions
 
+### GitHub Codespaces (Recommended for Development)
+
+When you create a new Codespace, the services should start automatically. If they don't, run these commands in the terminal:
+
+```bash
+# Install backend dependencies
+npm ci
+
+# Install frontend dependencies  
+npm --prefix internship-frontend ci
+
+# Start backend server (runs on port 5000)
+npm run dev
+
+# In a new terminal, start frontend (runs on port 3000)
+npm --prefix internship-frontend start
+```
+
+**Copy and paste these commands one by one** when setting up a new Codespace.
+
 ### Local Development
 ```bash
 # Install dependencies
