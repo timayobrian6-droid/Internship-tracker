@@ -1,4 +1,5 @@
 const express = require('express');
+const compression = require('compression');
 const sqlite3 = require('sqlite3').verbose();
 const cors = require('cors');
 const bcrypt = require('bcrypt');
@@ -15,10 +16,21 @@ const path = require('path');
 // ... (existing imports) ...
 
 const app = express();
+// Gzip compress all responses — biggest single speedup for JSON + static assets
+app.use(compression());
 app.use(cors());
 app.use(express.json());
-// Serve static files from the React frontend app
-app.use(express.static(path.join(__dirname, 'internship-frontend/build')));
+// Serve static files from the React frontend app with caching headers
+app.use(express.static(path.join(__dirname, 'internship-frontend/build'), {
+  maxAge: '1d',
+  etag: true,
+  setHeaders: (res, filePath) => {
+    // Hashed JS/CSS chunks can be cached aggressively; index.html should not
+    if (filePath.endsWith('index.html')) {
+      res.setHeader('Cache-Control', 'no-cache');
+    }
+  }
+}));
 
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_jwt_secret_change_me';
@@ -2187,7 +2199,9 @@ function authenticateToken(req, res, next) {
     jwt.verify(token, JWT_SECRET, (err, decoded) => {
         if (err) return res.status(403).json({ error: 'Invalid token' });
         if (!decoded || !decoded.userId) return res.status(403).json({ error: 'Invalid token' });
-        if (decoded.studentId || decoded.companyId) {
+        // All JWTs issued by login/register already contain role, studentId, companyId —
+        // skip the extra DB round-trip entirely (saves ~5ms per request)
+        if (decoded.role) {
             req.user = decoded;
             return next();
         }

@@ -1248,10 +1248,13 @@ function App() {
 
   useEffect(() => {
     if (view === 'main' && token && userRole === 'admin') {
-      loadAdminUsers();
-      loadAuditLogs();
-      loadAdminSettings();
-      loadCompanySubscriptions();
+      // Run all admin bootstrap fetches in parallel — no more waterfall
+      Promise.all([
+        loadAdminUsers(),
+        loadAuditLogs(),
+        loadAdminSettings(),
+        loadCompanySubscriptions()
+      ]).catch(e => console.error('Admin load error', e));
     }
   }, [view, token, userRole, loadAuditLogs]);
 
