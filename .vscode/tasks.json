@@ -25,9 +25,6 @@
 					"endsPattern": "Compiled successfully|Backend Engine running"
 				}
 			},
-			"runOptions": {
-				"runOn": "folderOpen"
-			},
 			"group": {
 				"kind": "build",
 				"isDefault": true
