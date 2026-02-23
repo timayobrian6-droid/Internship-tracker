@@ -104,19 +104,5 @@
 				"label": "Frontend"
 			}
 		},
-		{
-			"label": "Start all",
-			"dependsOn": ["Start backend", "Start frontend"],
-			"dependsOrder": "sequence",
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			},
-			"presentation": {
-				"reveal": "always",
-				"panel": "shared"
-			},
-			"problemMatcher": []
-		}
 	]
 }
