@@ -1,8 +1,8 @@
 {
   "name": "Internship Tracker",
   "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
-  "postCreateCommand": "npm ci && npm --prefix internship-frontend ci",
-  "postStartCommand": "npm run dev & npm --prefix internship-frontend start",
+  "postCreateCommand": "npm ci && npm --prefix internship-frontend ci && chmod +x start-services.sh",
+  "postStartCommand": "./start-services.sh",
   "forwardPorts": [3000, 5000],
   "portsAttributes": {
     "3000": {
