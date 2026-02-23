@@ -106,7 +106,16 @@ InternConnect solves these by providing a unified platform where students can ea
 
 ## Deployment Instructions
 
-### GitHub Codespaces (Recommended for Development)
+### Quick Start (Easiest Option)
+
+**Double-click `start.bat`** (Windows) or run `./start.ps1` (PowerShell) to automatically:
+- Install all dependencies
+- Start backend server (port 5000)
+- Start frontend server (port 3000)
+
+**Access your app at:** `http://localhost:3000`
+
+### GitHub Codespaces (Cloud Development)
 
 **Phase 1: Automatic Startup**
 When you create a new Codespace, services should start automatically on ports 5000 (backend) and 3000 (frontend).
