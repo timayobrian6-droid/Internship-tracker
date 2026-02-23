@@ -106,23 +106,40 @@ InternConnect solves these by providing a unified platform where students can ea
 
 ## Deployment Instructions
 
+## Deployment Instructions
+
 ### GitHub Codespaces (Recommended for Development)
 
-When you create a new Codespace, the services should start automatically. If they don't, run these commands in the terminal:
+#### Phase 1: Automatic Startup (Should happen automatically)
+When you create a new Codespace, both backend and frontend should start automatically on ports 5000 and 3000.
+
+#### Phase 2: Manual Installation (Run if dependencies aren't installed)
+If the services don't start, first install dependencies:
 
 ```bash
-# Install backend dependencies
+# Step 1: Install backend dependencies
 npm ci
 
-# Install frontend dependencies  
+# Step 2: Install frontend dependencies
 npm --prefix internship-frontend ci
+```
 
-# Start backend server (runs on port 5000)
+#### Phase 3: Manual Startup (Run if services don't start automatically)
+If services still don't start after installation, run these commands:
+
+```bash
+# Step 1: Start backend server (runs on port 5000)
 npm run dev
 
-# In a new terminal, start frontend (runs on port 3000)
+# Step 2: In a NEW terminal tab, start frontend (runs on port 3000)
 npm --prefix internship-frontend start
 ```
+
+**Order to follow:**
+1. **Wait for automatic startup** (usually takes 1-2 minutes)
+2. **If that fails** → Run Phase 2 installation commands
+3. **If installation succeeds but services don't start** → Run Phase 3 startup commands
+4. **Access your app** at `http://localhost:3000` (frontend) or `http://localhost:5000` (backend)
 
 **Copy and paste these commands one by one** when setting up a new Codespace.
 
