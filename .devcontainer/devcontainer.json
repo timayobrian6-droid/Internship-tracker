@@ -2,7 +2,7 @@
   "name": "Internship Tracker",
   "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
   "postCreateCommand": "npm ci && npm --prefix internship-frontend ci",
-  "postStartCommand": "if ! pgrep -f 'node server.js' > /dev/null; then nohup npm run dev > /tmp/backend.log 2>&1 & fi; if ! pgrep -f 'react-scripts start' > /dev/null; then nohup env BROWSER=none npm --prefix internship-frontend start > /tmp/frontend.log 2>&1 & fi",
+  "postStartCommand": "npm run dev & npm --prefix internship-frontend start",
   "forwardPorts": [3000, 5000],
   "portsAttributes": {
     "3000": {
