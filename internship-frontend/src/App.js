@@ -38,10 +38,11 @@ import { io } from 'socket.io-client';
  * It connects the user interface to the backend API and database.
  */
 
-const isDev = process.env.NODE_ENV === 'development';
-const devApiOrigin = process.env.REACT_APP_API_ORIGIN || `${window.location.protocol}//${window.location.hostname}:5000`;
-const API = isDev ? `${devApiOrigin}/api` : "/api";
-const HEALTH_URL = isDev ? `${devApiOrigin}/healthz` : '/healthz';
+// Always use relative URLs — the React dev server proxy forwards /api/* to
+// localhost:5000 internally. This works on local machines AND Codespaces
+// without any hardcoded hostnames or port numbers.
+const API = "/api";
+const HEALTH_URL = '/healthz';
 const ADMIN_CONTACT_EMAIL = 'timayobrian6@gmail.com';
 
 // This object ensures centering and blue theme regardless of Tailwind config
@@ -1938,7 +1939,8 @@ function App() {
   const socketRef = useRef(null);
   useEffect(() => {
     if (!socketRef.current) {
-      socketRef.current = io(isDev ? devApiOrigin : undefined);
+      // Connect to current page origin — proxy handles routing to backend
+      socketRef.current = io();
       socketRef.current.on('connect', () => console.log('socket connected', socketRef.current.id));
       socketRef.current.on('applications:changed', (payload) => {
         // refresh applications and lists when changed
