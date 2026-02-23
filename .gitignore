@@ -25,8 +25,11 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# editor/system
-.vscode/
+# editor/system — allow shared workspace config, block personal settings
+.vscode/*
+!.vscode/tasks.json
+!.vscode/settings.json
+!.vscode/launch.json
 .DS_Store
 Thumbs.db
 
