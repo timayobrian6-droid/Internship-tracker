@@ -1,57 +1,52 @@
 @echo off
-echo 🚀 Starting Internship Tracker...
+echo Starting Internship Tracker...
 echo.
 
 cd /d "%~dp0"
 
-where npm.cmd >nul 2>nul
+where npm >nul 2>nul
 if errorlevel 1 (
-	echo ❌ Node.js/npm is not installed.
-	echo 📥 Opening Node.js LTS download page...
-	start "" "https://nodejs.org/en/download"
+	echo ERROR: Node.js/npm is not installed.
+	echo Opening Node.js download page...
+	start https://nodejs.org/en/download
 	echo.
-	echo Complete Node.js installation, then press any key to continue.
-	pause >nul
-	where npm.cmd >nul 2>nul
-	if errorlevel 1 (
-		echo ❌ Node.js/npm still not detected. Please install from https://nodejs.org/en/download and run launch.bat again.
-		pause
-		exit /b 1
-	)
+	echo Please install Node.js and run this script again.
+	pause
+	exit /b 1
 )
 
 if not exist "node_modules" (
-	echo 📦 Installing backend dependencies...
-	call npm.cmd install
+	echo Installing backend dependencies...
+	call npm install
 	if errorlevel 1 (
-		echo ❌ Backend dependency installation failed.
+		echo ERROR: Backend installation failed.
 		pause
 		exit /b 1
 	)
 )
 
 if not exist "internship-frontend\node_modules" (
-	echo 📦 Installing frontend dependencies...
-	call npm.cmd --prefix internship-frontend install
+	echo Installing frontend dependencies...
+	call npm --prefix internship-frontend install
 	if errorlevel 1 (
-		echo ❌ Frontend dependency installation failed.
+		echo ERROR: Frontend installation failed.
 		pause
 		exit /b 1
 	)
 )
 
-echo 🚀 Starting backend server (port 5000)...
-start "Internship Backend" cmd /k "cd /d \"%~dp0\" && npm.cmd run dev"
+echo Starting backend server...
+start "Backend" cmd /k "npm run dev"
 
+echo Waiting for backend to start...
 timeout /t 3 /nobreak > nul
 
-echo 🚀 Starting frontend server (port 3000)...
-start "Internship Frontend" cmd /k "cd /d \"%~dp0internship-frontend\" && npm.cmd start"
+echo Starting frontend server...
+start "Frontend" cmd /k "cd internship-frontend && npm start"
 
 echo.
-echo ✅ Services started successfully!
-echo 🌐 Frontend: http://localhost:3000
-echo 🔧 Backend API: http://localhost:5000
+echo SUCCESS: Services started!
+echo Frontend: http://localhost:3000
+echo Backend: http://localhost:5000
 echo.
-echo Press any key to close this window...
-pause > nul
+pause
