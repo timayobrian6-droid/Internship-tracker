@@ -2526,5 +2526,26 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'internship-frontend', 'build', 'index.html'));
 });
 
+server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+        console.error(`\n[ERROR] Port ${PORT} is already in use.`);
+        console.error(`        Stop any existing server process (e.g. kill the old terminal or run: npx kill-port ${PORT}) and then retry.\n`);
+    } else {
+        console.error('[ERROR] Server error:', err.message);
+    }
+    process.exit(1);
+});
+
+process.on('uncaughtException', (err) => {
+    console.error('[UNCAUGHT EXCEPTION]', err.message);
+    console.error(err.stack);
+    process.exit(1);
+});
+
+process.on('unhandledRejection', (reason) => {
+    console.error('[UNHANDLED REJECTION]', reason);
+    process.exit(1);
+});
+
 server.listen(PORT, () => console.log(`Backend Engine running on port ${PORT}`));
 
