@@ -73,6 +73,27 @@ Press `Ctrl+C` to stop everything.
 
 ---
 
+### GitHub Codespaces — Automatic Setup
+
+When you open this repository in a **GitHub Codespace**, everything starts automatically — no manual steps required.
+
+| What happens | When |
+|---|---|
+| `npm install` + frontend dependencies installed | On container creation (`postCreateCommand`) |
+| Backend (port 5000) + Frontend (port 3000) launched | Every time the Codespace opens (`postStartCommand`) |
+| Ports 3000 & 5000 forwarded automatically | On startup |
+| Browser opens to the frontend | On startup |
+
+**Logs** (if something goes wrong):
+```bash
+tail -f /tmp/backend.log    # backend output
+tail -f /tmp/frontend.log   # frontend output
+```
+
+The configuration lives in `.devcontainer/devcontainer.json` and `.devcontainer/start-services.sh`.
+
+---
+
 ### Environment variables (optional / production)
 
 Create a `.env` file in the project root:
@@ -196,4 +217,5 @@ Uses SQLite — no setup needed. The database file is created automatically on f
 | Fixed `authenticateToken` middleware | Removed redundant DB query on every authenticated request |
 | Admin dashboard loads in parallel | All 4 admin data fetches run simultaneously instead of one by one |
 | Fixed `.vscode/tasks.json` | Removed Windows-only `npm.cmd`/`cmd` commands, uses bash now |
-| Removed auto-start on folder open | VS Code no longer launches servers automatically — run them manually |
+| Removed auto-start on folder open | VS Code no longer launches servers automatically on local — run them manually |
+| Added Codespaces auto-launch | Backend + frontend start automatically when a Codespace opens via `.devcontainer/` |
