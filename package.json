@@ -6,6 +6,7 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "start:all": "concurrently --names \"BACKEND,FRONTEND\" --prefix-colors \"cyan,magenta\" --kill-others-on-fail \"npm run dev\" \"BROWSER=none PORT=3000 GENERATE_SOURCEMAP=false npm --prefix internship-frontend start\"",
+    "seed:demo-accounts": "node scripts/seed_demo_accounts.js",
     "db:backup-migrate": "node scripts/migrate_and_backup.js",
     "build:frontend": "npm --prefix internship-frontend ci --include=dev && npm --prefix internship-frontend run build"
   },

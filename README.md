@@ -123,6 +123,26 @@ Uses SQLite — no setup needed. The database file is created automatically on f
 
 ---
 
+## Existing Login Credentials
+
+The following users are already registered in the current database and can log in immediately (all accounts are active/auto-approved):
+
+If you are using a fresh database, run this first to recreate these exact accounts:
+
+```bash
+npm run seed:demo-accounts
+```
+
+| Role | Username | Email | Password |
+|---|---|---|---|
+| Student | `newstudent_1740400000` | `newstudent_1740400000@example.com` | `Pass123!` |
+| Company | `newcompany_1771932705` | `newcompany_1771932705@example.com` | `Pass123` |
+| Company | `newcompany_test_001` | `newcompany_test_001@example.com` | `Pass123` |
+
+You can sign in using either username or email.
+
+---
+
 ## Student Guide
 
 ### Getting Started

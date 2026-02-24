@@ -1533,7 +1533,7 @@ app.post('/api/auth/register', async (req, res) => {
         const username = (req.body.username || req.body.login || req.body.identifier || '').toString().trim();
         const email = (req.body.email || req.body.login || req.body.identifier || '').toString().trim();
         const password = (req.body.password || '').toString();
-        let role = (req.body.role || '').toString().trim();
+        let role = (req.body.role || '').toString().trim().toLowerCase();
         const student_id = req.body.student_id || null;
         const company_id = req.body.company_id || null;
 
@@ -1543,43 +1543,89 @@ app.post('/api/auth/register', async (req, res) => {
         if (!role) role = 'student';
         // prevent creating admin accounts via public registration
         if (role === 'admin') return res.status(403).json({ error: 'Admin registration is disabled' });
+        if (role !== 'student' && role !== 'company') {
+            return res.status(400).json({ error: 'role must be either student or company' });
+        }
         if ((!username && !email) || !password) return res.status(400).json({ error: 'username/email and password required' });
 
-        // ── Explicit uniqueness check BEFORE insert ──────────────
-        const checkUnique = () => new Promise((resolve, reject) => {
-            if (username) {
-                db.get(`SELECT id FROM users WHERE lower(username) = lower(?)`, [username], (err, row) => {
-                    if (err) return reject(err);
-                    if (row) return reject(new Error('Username already exists. Please choose another username.'));
-                    if (email) {
-                        db.get(`SELECT id FROM users WHERE lower(email) = lower(?)`, [email], (err2, row2) => {
-                            if (err2) return reject(err2);
-                            if (row2) return reject(new Error('Email already exists. Please sign in or use another email.'));
-                            resolve();
-                        });
-                    } else resolve();
-                });
-            } else if (email) {
-                db.get(`SELECT id FROM users WHERE lower(email) = lower(?)`, [email], (err, row) => {
-                    if (err) return reject(err);
-                    if (row) return reject(new Error('Email already exists. Please sign in or use another email.'));
-                    resolve();
-                });
-            } else resolve();
+        const getUserColumns = () => new Promise((resolve, reject) => {
+            db.all(`PRAGMA table_info('users')`, [], (err, cols) => {
+                if (err) return reject(err);
+                const names = new Set((cols || []).map(c => c.name));
+                resolve(names);
+            });
         });
 
         try {
-            await checkUnique();
-        } catch (dupErr) {
-            return res.status(409).json({ error: dupErr.message });
-        }
+            const userColumns = await getUserColumns();
 
-        getAppSetting('require_approval', '0', async (errSetting, value) => {
-            if (errSetting) return res.status(500).json({ error: errSetting.message });
-            const status = 'active';
+            // ── Explicit uniqueness check BEFORE insert ──────────────
+            const checkUnique = () => new Promise((resolve, reject) => {
+                const checkByUsername = username && userColumns.has('username');
+                const checkByEmail = email && userColumns.has('email');
+
+                if (checkByUsername) {
+                    db.get(`SELECT id FROM users WHERE lower(username) = lower(?)`, [username], (err, row) => {
+                        if (err) return reject(err);
+                        if (row) return reject(new Error('Username already exists. Please choose another username.'));
+                        if (checkByEmail) {
+                            db.get(`SELECT id FROM users WHERE lower(email) = lower(?)`, [email], (err2, row2) => {
+                                if (err2) return reject(err2);
+                                if (row2) return reject(new Error('Email already exists. Please sign in or use another email.'));
+                                resolve();
+                            });
+                        } else resolve();
+                    });
+                    return;
+                }
+
+                if (checkByEmail) {
+                    db.get(`SELECT id FROM users WHERE lower(email) = lower(?)`, [email], (err, row) => {
+                        if (err) return reject(err);
+                        if (row) return reject(new Error('Email already exists. Please sign in or use another email.'));
+                        resolve();
+                    });
+                    return;
+                }
+
+                resolve();
+            });
+
+            await checkUnique();
+
             const hash = await bcrypt.hash(password, 10);
-            const sql = `INSERT INTO users (username, email, password_hash, role, student_id, company_id, status) VALUES (?, ?, ?, ?, ?, ?, ?)`;
-            db.run(sql, [username || null, email || null, hash, role, student_id || null, company_id || null, status], function(err) {
+
+            const insertCols = [];
+            const insertVals = [];
+            const addCol = (name, value) => {
+                if (userColumns.has(name)) {
+                    insertCols.push(name);
+                    insertVals.push(value);
+                }
+            };
+
+            addCol('username', username || null);
+            addCol('email', email || null);
+            if (userColumns.has('password_hash')) {
+                addCol('password_hash', hash);
+            } else if (userColumns.has('password')) {
+                addCol('password', hash);
+            } else {
+                return res.status(500).json({ error: 'Users table is missing password column. Run migrations and restart the server.' });
+            }
+            addCol('role', role);
+            addCol('student_id', student_id || null);
+            addCol('company_id', company_id || null);
+            addCol('status', 'active');
+
+            if (!insertCols.length) {
+                return res.status(500).json({ error: 'Users table schema is invalid. Run migrations and restart the server.' });
+            }
+
+            const placeholders = insertCols.map(() => '?').join(', ');
+            const sql = `INSERT INTO users (${insertCols.join(', ')}) VALUES (${placeholders})`;
+
+            db.run(sql, insertVals, function(err) {
                 if (err) {
                     const message = String(err.message || '').toLowerCase();
                     if (message.includes('unique constraint failed: users.username')) {
@@ -1591,10 +1637,10 @@ app.post('/api/auth/register', async (req, res) => {
                     return res.status(500).json({ error: err.message });
                 }
                 const userId = this.lastID;
+                const status = 'active';
 
                 logAudit({ actorUserId: userId, actionType: 'register', entityType: 'user', entityId: userId, details: { role, status } });
-                const user = { id: userId, username: username || null, email: email || null, role, status };
-                const payload = { userId: userId, role: user.role, studentId: student_id || null, companyId: company_id || null };
+                const payload = { userId: userId, role, studentId: student_id || null, companyId: company_id || null };
                 // fetch linked profile display name if possible
                 if (student_id) {
                     db.get(`SELECT * FROM students WHERE id = ?`, [student_id], (err2, studentRow) => {
@@ -1614,7 +1660,12 @@ app.post('/api/auth/register', async (req, res) => {
                     res.json({ token, user: { ...payload, displayName, status } });
                 }
             });
-        });
+        } catch (dupErr) {
+            if (String(dupErr?.message || '').toLowerCase().includes('already exists')) {
+                return res.status(409).json({ error: dupErr.message });
+            }
+            return res.status(500).json({ error: dupErr.message || 'Registration failed' });
+        }
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
