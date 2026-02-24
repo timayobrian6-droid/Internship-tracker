@@ -13,6 +13,29 @@ require('dotenv').config();
 
 const path = require('path');
 
+// ════════════════════════════════════════════════════════
+//  CRASH PROTECTION — keep the backend alive at all costs
+// ════════════════════════════════════════════════════════
+
+// Catch any thrown error that was never caught in sync code
+process.on('uncaughtException', (err, origin) => {
+    console.error('══ UNCAUGHT EXCEPTION ══');
+    console.error('Origin:', origin);
+    console.error(err);
+    // Stay alive — do NOT call process.exit()
+});
+
+// Catch any rejected promise that nobody handled
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('══ UNHANDLED REJECTION ══');
+    console.error('Promise:', promise);
+    console.error('Reason:', reason);
+    // Stay alive — do NOT call process.exit()
+});
+
+// Warn (but don't crash) on too many listeners — helps debug leaks
+process.setMaxListeners(25);
+
 // ... (existing imports) ...
 
 const app = express();
@@ -2518,13 +2541,51 @@ setInterval(checkDeadlinesAndNotify, 60 * 60 * 1000);
 setTimeout(checkDeadlinesAndNotify, 5000);
 
 app.get('/healthz', (req, res) => {
-    res.status(200).json({ status: 'ok' });
+    res.status(200).json({ status: 'ok', uptime: process.uptime() });
 });
 
 // Client-side routing: Serve index.html for any unknown route
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'internship-frontend', 'build', 'index.html'));
 });
+
+// ════════════════════════════════════════════════════════
+//  EXPRESS GLOBAL ERROR HANDLER — catch anything that
+//  slips past individual route try/catch blocks
+// ════════════════════════════════════════════════════════
+app.use((err, req, res, _next) => {
+    console.error('══ EXPRESS ERROR ══', req.method, req.originalUrl);
+    console.error(err.stack || err);
+    if (!res.headersSent) {
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// ════════════════════════════════════════════════════════
+//  GRACEFUL SHUTDOWN — close DB + sockets cleanly on stop
+// ════════════════════════════════════════════════════════
+function gracefulShutdown(signal) {
+    console.log(`\nReceived ${signal}. Shutting down gracefully...`);
+    server.close(() => {
+        console.log('HTTP server closed.');
+        if (io) {
+            io.close(() => console.log('Socket.IO closed.'));
+        }
+        db.close((err) => {
+            if (err) console.error('Error closing DB:', err.message);
+            else console.log('Database closed.');
+            process.exit(0);
+        });
+    });
+    // Force exit after 10 s if graceful close hangs
+    setTimeout(() => {
+        console.error('Graceful shutdown timed out — forcing exit.');
+        process.exit(1);
+    }, 10000);
+}
+
+process.on('SIGINT',  () => gracefulShutdown('SIGINT'));
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 
 server.listen(PORT, () => console.log(`Backend Engine running on port ${PORT}`));
 

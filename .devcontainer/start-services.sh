@@ -38,12 +38,21 @@ kill_port() {
 kill_port "$PORT"
 kill_port 3000
 
-# ── Backend ──────────────────────────────────────────
-echo "Starting backend on port $PORT..."
-nohup node server.js > /tmp/backend.log 2>&1 &
-BACKEND_PID=$!
-disown $BACKEND_PID
-echo "Backend launched (PID $BACKEND_PID)"
+# ── Backend (with watchdog auto-restart) ─────────────
+echo "Starting backend on port $PORT with auto-restart watchdog..."
+
+# Watchdog: restart backend if it ever exits
+(
+  while true; do
+    node "$PROJECT_ROOT/server.js" >> /tmp/backend.log 2>&1
+    EXIT_CODE=$?
+    echo "[$(date)] Backend exited with code $EXIT_CODE — restarting in 3s..." >> /tmp/backend.log
+    sleep 3
+  done
+) &
+WATCHDOG_PID=$!
+disown $WATCHDOG_PID
+echo "Backend watchdog launched (PID $WATCHDOG_PID)"
 
 # Wait up to 20 seconds for backend health check
 BACKEND_OK=false
