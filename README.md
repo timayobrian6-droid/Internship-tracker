@@ -129,6 +129,12 @@ To serve the built frontend from the backend:
 npm start
 ```
 
+If you prefer the all-in-one command name:
+
+```bash
+npm run start:all
+```
+
 Open `http://localhost:3001`.
 
 ---
